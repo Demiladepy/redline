@@ -560,16 +560,21 @@
 
     /* FAQ */
     .faq-section {
-      padding: 5rem 0;
+      padding: 5.5rem 0 6rem;
     }
 
     .faq-layout {
       display: grid;
-      grid-template-columns: 0.9fr 1.1fr;
-      gap: 3.5rem;
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: clamp(2.5rem, 5vw, 4.5rem);
       align-items: start;
-      max-width: 56rem;
+      max-width: 58rem;
       margin: 0 auto;
+    }
+
+    .faq-left {
+      position: sticky;
+      top: 1.5rem;
     }
 
     .faq-left h2 {
@@ -586,32 +591,14 @@
       color: var(--landing-muted);
       font-size: 1.05rem;
       line-height: 1.55;
-      margin: 0 0 1.75rem;
-      max-width: 22rem;
+      margin: 0 0 2rem;
+      max-width: 20rem;
     }
 
-    .faq-mascot {
-      margin-top: 2.5rem;
-      width: 4.5rem;
-      height: 4.5rem;
-      border-radius: 14px;
-      background: var(--landing-accent-soft);
-      border: 1px solid var(--landing-accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--landing-accent-strong);
-    }
-
-    .faq-mascot svg {
-      width: 2rem;
-      height: 2rem;
-    }
-
-    .faq-list {
+    .faq-thread {
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
+      gap: 1.75rem;
     }
 
     .faq-item {
@@ -623,41 +610,79 @@
     .faq-item summary {
       list-style: none;
       cursor: pointer;
+      display: block;
+      width: fit-content;
+      max-width: min(100%, 26rem);
       border: 1px solid var(--landing-line);
-      border-radius: 18px;
+      border-radius: 20px 20px 20px 6px;
       background: #fff;
-      padding: 1rem 1.15rem;
+      padding: 1rem 1.2rem;
       font-size: 1rem;
       font-weight: 500;
       line-height: 1.45;
       color: var(--landing-ink);
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 10px 28px rgba(18, 18, 18, 0.04);
+      transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
     }
 
     .faq-item summary::-webkit-details-marker {
       display: none;
     }
 
+    .faq-item summary::marker {
+      content: "";
+    }
+
     .faq-item summary:hover {
-      border-color: rgba(18, 18, 18, 0.18);
-      box-shadow: 0 8px 24px rgba(18, 18, 18, 0.04);
+      border-color: rgba(61, 142, 196, 0.35);
+      box-shadow: 0 12px 32px rgba(18, 18, 18, 0.06);
     }
 
     .faq-item[open] summary {
       border-color: var(--landing-accent);
       background: var(--landing-accent-soft);
+      box-shadow: 0 12px 32px rgba(61, 142, 196, 0.12);
+    }
+
+    .faq-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.35s ease, margin-top 0.35s ease;
+      margin-top: 0;
+    }
+
+    .faq-item[open] .faq-body {
+      grid-template-rows: 1fr;
+      margin-top: 0.85rem;
+    }
+
+    .faq-body-inner {
+      overflow: hidden;
+      display: flex;
+      justify-content: flex-end;
     }
 
     .faq-answer {
-      margin: 0.65rem 0 0 1.5rem;
-      max-width: 28rem;
-      margin-left: auto;
-      padding: 1rem 1.15rem;
-      border-radius: 18px;
-      background: var(--landing-ink);
-      color: #fff;
+      margin: 0;
+      max-width: min(100%, 28rem);
+      padding: 1rem 1.2rem;
+      border-radius: 20px 20px 6px 20px;
+      background: #2a2f36;
+      color: rgba(255, 255, 255, 0.94);
       font-size: 0.96rem;
-      line-height: 1.55;
+      line-height: 1.6;
+    }
+
+    .faq-answer code {
+      font-size: 0.88em;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
     }
 
     /* Footer */
@@ -764,16 +789,23 @@
 
       .faq-layout {
         grid-template-columns: 1fr;
-        gap: 2rem;
+        gap: 2.5rem;
+      }
+
+      .faq-left {
+        position: static;
       }
 
       .faq-left p {
         max-width: none;
       }
 
+      .faq-item summary {
+        max-width: 100%;
+      }
+
       .faq-answer {
-        margin-left: 0;
-        max-width: none;
+        max-width: 100%;
       }
     }
 
@@ -791,6 +823,14 @@
     @media (prefers-reduced-motion: reduce) {
       .pulse-dot {
         animation: none;
+      }
+
+      .faq-body {
+        transition: none;
+      }
+
+      .faq-item summary {
+        transition: none;
       }
     }
   </style>
@@ -1030,57 +1070,72 @@
   <section class="shell section faq-section" id="faq">
     <div class="faq-layout">
       <div class="faq-left reveal" data-gsap="scroll">
-        <h2>Frequently asked questions</h2>
-        <p>Common questions about what Redline checks and how to try it.</p>
-        <a class="btn-dark btn-lg" href="/app.html">Open app</a>
-        <div class="faq-mascot" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            <line x1="8" y1="7" x2="16" y2="7"/>
-            <line x1="8" y1="11" x2="14" y2="11"/>
-          </svg>
-        </div>
+        <h2>Questions</h2>
+        <p>What the checker does, how to try it without a key, and why a bad rewrite can still look successful.</p>
+        <a class="btn-dark btn-lg" href="/app.html?sample=1">Try sample case</a>
       </div>
 
-      <div class="faq-list reveal" data-gsap="scroll">
-        <details class="faq-item" open>
-          <summary>What does Redline actually check?</summary>
-          <p class="faq-answer">
-            It compares the verbatim transcript and the cleanup rewrite from one
-            Dictation API response. It flags dropped or inserted negations, numbers,
-            and entities that do not trace back to what was said.
-          </p>
+      <div class="faq-thread">
+        <details class="faq-item reveal" data-gsap="scroll" open>
+          <summary>What does Redline check?</summary>
+          <div class="faq-body">
+            <div class="faq-body-inner">
+              <p class="faq-answer">
+                It compares <code>text</code> and <code>llm_response</code> from one
+                Dictation API response and flags tokens in the rewrite that do not
+                trace back to what was said. Findings are reported with AssemblyAI S1
+                categories: negation, proper nouns and names, alphanumeric strings, and
+                domain terminology.
+              </p>
+            </div>
+          </div>
         </details>
-        <details class="faq-item">
-          <summary>Does the checker use another LLM?</summary>
-          <p class="faq-answer">
-            No. The aligner is deterministic token rules and tests. A second model
-            grading the first would defeat the point.
-          </p>
+        <details class="faq-item reveal" data-gsap="scroll">
+          <summary>Does it use another LLM?</summary>
+          <div class="faq-body">
+            <div class="faq-body-inner">
+              <p class="faq-answer">
+                No. The aligner is deterministic token rules with unit tests. A
+                second model grading the first would defeat the point.
+              </p>
+            </div>
+          </div>
         </details>
-        <details class="faq-item">
-          <summary>Can I try it without an API key?</summary>
-          <p class="faq-answer">
-            Yes. The sample case and paste mode run entirely in the browser with no
-            network call. Live recording needs a key on the server.
-          </p>
+        <details class="faq-item reveal" data-gsap="scroll">
+          <summary>Can I try without an API key?</summary>
+          <div class="faq-body">
+            <div class="faq-body-inner">
+              <p class="faq-answer">
+                Yes. The sample case and paste mode run in the browser with no
+                network call. Live recording goes through the server and needs a key
+                in <code>AAI_API_KEY</code>.
+              </p>
+            </div>
+          </div>
         </details>
-        <details class="faq-item">
-          <summary>Why does a bad rewrite still return success?</summary>
-          <p class="faq-answer">
-            The Dictation API can return HTTP 200 with a null error even when the
-            cleanup changed meaning. Redline is built for that gap, not for failed
-            requests.
-          </p>
+        <details class="faq-item reveal" data-gsap="scroll">
+          <summary>Why can a bad rewrite still return 200?</summary>
+          <div class="faq-body">
+            <div class="faq-body-inner">
+              <p class="faq-answer">
+                The Dictation API can return HTTP 200 with <code>llm_error: null</code>
+                even when the cleanup changed meaning. Redline is built for that gap,
+                not for failed requests.
+              </p>
+            </div>
+          </div>
         </details>
-        <details class="faq-item">
+        <details class="faq-item reveal" data-gsap="scroll">
           <summary>How is this different from a dictation app?</summary>
-          <p class="faq-answer">
-            Redline is a measurement layer. The UI is a demo. The submission is the
-            checker, a 15-clip corpus, and an honest list of false positives and
-            misses.
-          </p>
+          <div class="faq-body">
+            <div class="faq-body-inner">
+              <p class="faq-answer">
+                Redline is a measurement layer on top of the API pair. The UI is a
+                demo. The submission is the checker, a 15-clip corpus, and documented
+                false positives and misses.
+              </p>
+            </div>
+          </div>
         </details>
       </div>
     </div>
@@ -1140,17 +1195,18 @@
         document.querySelectorAll('.section').forEach((section) => {
           const items = section.querySelectorAll('[data-gsap="scroll"]');
           if (!items.length) return;
-          gsap.set(items, { y: 32, opacity: 0 });
+          const isFaq = section.id === 'faq';
+          gsap.set(items, { y: isFaq ? 20 : 32, opacity: 0 });
           gsap.to(items, {
             scrollTrigger: {
-              trigger: section,
-              start: 'top 82%',
+              trigger: isFaq ? section.querySelector('.faq-thread') || section : section,
+              start: isFaq ? 'top 78%' : 'top 82%',
               once: true,
             },
             y: 0,
             opacity: 1,
-            duration: 0.75,
-            stagger: 0.08,
+            duration: isFaq ? 0.65 : 0.75,
+            stagger: isFaq ? 0.1 : 0.08,
             ease: 'power2.out',
           });
         });
