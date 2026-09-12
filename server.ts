@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { ground } from './ground.ts';
+import { ground, annotateFindings } from './ground.ts';
+import type { WordConfidence } from './ground.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, 'public');
@@ -90,17 +91,27 @@ async function readBody(req: IncomingMessage): Promise<Buffer> {
 
 async function check(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const raw = await readBody(req);
-  let body: { text?: string; llm_response?: string | null };
+  let body: {
+    text?: string;
+    llm_response?: string | null;
+    words?: WordConfidence[] | null;
+  };
   try {
-    body = JSON.parse(raw.toString('utf8')) as { text?: string; llm_response?: string | null };
+    body = JSON.parse(raw.toString('utf8')) as {
+      text?: string;
+      llm_response?: string | null;
+      words?: WordConfidence[] | null;
+    };
   } catch {
     res.writeHead(400, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Invalid JSON', hint: 'Send { text, llm_response }.' }));
+    res.end(JSON.stringify({ error: 'Invalid JSON', hint: 'Send { text, llm_response, words? }.' }));
     return;
   }
   const result = ground(body.text ?? '', body.llm_response);
+  const words = Array.isArray(body.words) ? body.words : null;
+  const findings = annotateFindings(result.findings, words);
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(result));
+  res.end(JSON.stringify({ ...result, findings }));
 }
 
 async function transcribe(req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -173,12 +184,16 @@ async function transcribe(req: IncomingMessage, res: ServerResponse): Promise<vo
       ? (data.llm_response as string | null)
       : null;
   const checked = ground(text, llmResponse);
+  const words = Array.isArray(data.words)
+    ? (data.words as WordConfidence[])
+    : null;
+  const findings = annotateFindings(checked.findings, words);
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(
     JSON.stringify({
       ...data,
       verdict: checked.verdict,
-      findings: checked.findings,
+      findings,
     }),
   );
 }

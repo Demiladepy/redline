@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ground } from '../ground.ts';
+import { ground, annotateFindings } from '../ground.ts';
 
 describe('ground', () => {
   it('negation dropped', () => {
@@ -88,6 +88,38 @@ describe('ground', () => {
       'The mass is not present on the scan.',
       'The mass is absent from the scan.',
     );
+    assert.equal(r.verdict.level, 'high');
+  });
+
+  it('R9 annotate: confident drop is rewrite cause', () => {
+    const r = ground(
+      'Patient is not allergic to penicillin.',
+      'Patient is allergic to penicillin.',
+    );
+    const annotated = annotateFindings(r.findings, [
+      { text: 'Patient', confidence: 0.99 },
+      { text: 'is', confidence: 0.99 },
+      { text: 'not', confidence: 0.82 },
+      { text: 'allergic', confidence: 0.97 },
+      { text: 'to', confidence: 0.99 },
+      { text: 'penicillin.', confidence: 0.95 },
+    ]);
+    const dropped = annotated.find((f) => f.token === 'not');
+    assert.ok(dropped);
+    assert.equal(dropped.cause, 'rewrite');
+    assert.equal(r.verdict.level, 'high');
+  });
+
+  it('R9 annotate: low confidence drop is mishearing cause', () => {
+    const r = ground(
+      'Patient is not allergic to penicillin.',
+      'Patient is allergic to penicillin.',
+    );
+    const annotated = annotateFindings(r.findings, [
+      { text: 'not', confidence: 0.31 },
+    ]);
+    const dropped = annotated.find((f) => f.token === 'not');
+    assert.equal(dropped.cause, 'mishearing');
     assert.equal(r.verdict.level, 'high');
   });
 });

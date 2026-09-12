@@ -16,7 +16,7 @@
     }
 
     .shell {
-      max-width: 1040px;
+      max-width: 840px;
       margin: 0 auto;
       padding: 1rem 1.25rem 3rem;
     }
@@ -77,6 +77,47 @@
 
     .hint { color: var(--muted); font-size: 0.9rem; }
 
+    .paste-box {
+      margin: 0 0 1.15rem;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 0.85rem 1rem 1rem;
+      background: #fbfcfd;
+    }
+    .paste-box summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-family: var(--font-display);
+      letter-spacing: -0.02em;
+    }
+    .paste-help {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 0.65rem 0 0.75rem;
+    }
+    .paste-label {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      margin: 0.55rem 0 0.35rem;
+    }
+    .paste-box textarea {
+      width: 100%;
+      font: inherit;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.65rem 0.75rem;
+      resize: vertical;
+      background: #fff;
+    }
+    #pasteCheckBtn {
+      margin-top: 0.75rem;
+      border-radius: 10px;
+    }
+
     .error {
       display: none;
       margin: 0 0 1rem;
@@ -88,23 +129,33 @@
     }
     .error.show { display: block; }
 
-    .panes {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.85rem;
+    .verdict {
+      display: none;
+      margin: 0 0 1rem;
+      padding: 0.95rem 1.05rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1.05rem;
     }
-    @media (max-width: 760px) {
-      .panes { grid-template-columns: 1fr; }
+    .verdict.show { display: block; }
+    .verdict.clean, .verdict.none { background: var(--ok-bg); color: var(--ok); }
+    .verdict.medium { background: var(--med-bg); color: var(--med); }
+    .verdict.high { background: var(--high-bg); color: var(--high); }
+
+    .source-note {
+      display: none;
+      margin: -0.35rem 0 1rem;
+      font-size: 0.88rem;
+      color: var(--muted);
     }
+    .source-note.show { display: block; }
 
     .pane {
       border: 1px solid var(--line);
       background: #fbfcfd;
       border-radius: 16px;
       padding: 1rem 1.05rem;
-      min-height: 13rem;
-      display: flex;
-      flex-direction: column;
+      margin-bottom: 0.85rem;
     }
     .pane h2 {
       margin: 0 0 0.55rem;
@@ -113,21 +164,56 @@
       letter-spacing: 0.08em;
       color: var(--muted);
       font-weight: 600;
-      font-family: var(--font-body);
     }
     .text {
       white-space: pre-wrap;
       line-height: 1.55;
-      font-size: 1.05rem;
-      flex: 1;
+      font-size: 1.08rem;
     }
     mark.high { background: var(--high-bg); color: var(--high); padding: 0 0.15em; border-radius: 3px; }
     mark.medium { background: var(--med-bg); color: var(--med); padding: 0 0.15em; border-radius: 3px; }
+    mark.gap {
+      display: inline-block;
+      background: var(--high-bg);
+      color: var(--high);
+      border: 1px dashed #e58b86;
+      padding: 0 0.35em;
+      border-radius: 4px;
+      font-size: 0.92em;
+      font-weight: 600;
+    }
 
-    .copy-row { margin-top: 0.9rem; }
+    .findings {
+      display: none;
+      margin: 0 0 0.85rem;
+      padding: 0;
+      list-style: none;
+    }
+    .findings.show { display: block; }
+    .findings li {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.7rem 0.9rem;
+      margin-bottom: 0.45rem;
+      background: #fff;
+      font-size: 0.95rem;
+    }
+    .findings .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-right: 0.45rem;
+    }
+    .findings .tag.high { color: var(--high); }
+    .findings .tag.medium { color: var(--med); }
+
+    .copy-row { margin-top: 0.85rem; }
     #copyBtn {
       border-radius: 10px;
       width: 100%;
+      max-width: 28rem;
       transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     }
     #copyBtn.warn {
@@ -136,18 +222,8 @@
       background: var(--high-bg);
     }
 
-    .verdict {
-      margin-top: 0.9rem;
-      padding: 0.8rem 0.95rem;
-      border-radius: 12px;
-      font-weight: 600;
-    }
-    .verdict.clean, .verdict.none { background: var(--ok-bg); color: var(--ok); }
-    .verdict.medium { background: var(--med-bg); color: var(--med); }
-    .verdict.high { background: var(--high-bg); color: var(--high); }
-
     .meta {
-      margin-top: 0.75rem;
+      margin-top: 0.35rem;
       color: var(--muted);
       font-size: 0.9rem;
     }
@@ -173,44 +249,69 @@
     <main class="workspace">
       <h1>Dictation</h1>
       <p class="lede">
-        Record what you mean. We show the verbatim, the cleanup, and every span that does not trace back.
+        Record, then read the verdict first. The rewrite is checked against the verbatim.
       </p>
 
       <div class="controls">
         <button type="button" class="primary" id="recordBtn">Record</button>
-        <button type="button" id="sampleBtn">Run sample case</button>
+        <button type="button" id="sampleBtn">Sample case (no API call)</button>
         <span class="hint" id="spaceHint">Space to record</span>
       </div>
 
+      <details class="paste-box" id="pasteBox">
+        <summary>Paste mode — check any pipeline (no API call)</summary>
+        <p class="paste-help">
+          Paste what was said and what the tool produced. The checker runs in the browser only.
+        </p>
+        <label class="paste-label" for="pasteSaid">What was said</label>
+        <textarea id="pasteSaid" rows="3" placeholder="Verbatim transcript"></textarea>
+        <label class="paste-label" for="pasteGot">What the tool produced</label>
+        <textarea id="pasteGot" rows="3" placeholder="Rewrite / cleanup output"></textarea>
+        <button type="button" id="pasteCheckBtn">Check paste</button>
+      </details>
+
       <div class="error" id="error" role="alert"></div>
 
-      <div class="panes">
-        <section class="pane">
-          <h2>Verbatim</h2>
-          <div class="text" id="verbatim"></div>
-        </section>
-        <section class="pane">
-          <h2>Rewrite</h2>
-          <div class="text" id="rewrite"></div>
-          <div class="copy-row">
-            <button type="button" id="copyBtn" hidden>Copy rewrite</button>
-          </div>
-        </section>
-      </div>
+      <!-- R3: verdict before detail -->
+      <div class="verdict" id="verdict" role="status"></div>
+      <p class="source-note" id="sourceNote"></p>
 
-      <div class="verdict" id="verdict" hidden></div>
+      <section class="pane" id="rewritePane" hidden>
+        <h2>Rewrite</h2>
+        <div class="text" id="rewrite"></div>
+        <div class="copy-row">
+          <button type="button" id="copyBtn" hidden>Copy rewrite</button>
+        </div>
+      </section>
+
+      <ul class="findings" id="findings" aria-label="Findings"></ul>
+
+      <section class="pane" id="verbatimPane" hidden>
+        <h2>Verbatim · source of truth</h2>
+        <div class="text" id="verbatim"></div>
+      </section>
+
       <div class="meta" id="meta"></div>
     </main>
   </div>
 
   <script type="module">
+    import { ground, annotateFindings } from '/ground.js';
+
     const recordBtn = document.getElementById('recordBtn');
     const sampleBtn = document.getElementById('sampleBtn');
+    const pasteCheckBtn = document.getElementById('pasteCheckBtn');
+    const pasteSaid = document.getElementById('pasteSaid');
+    const pasteGot = document.getElementById('pasteGot');
     const copyBtn = document.getElementById('copyBtn');
     const errorEl = document.getElementById('error');
     const verbatimEl = document.getElementById('verbatim');
     const rewriteEl = document.getElementById('rewrite');
     const verdictEl = document.getElementById('verdict');
+    const sourceNote = document.getElementById('sourceNote');
+    const findingsEl = document.getElementById('findings');
+    const rewritePane = document.getElementById('rewritePane');
+    const verbatimPane = document.getElementById('verbatimPane');
     const metaEl = document.getElementById('meta');
 
     let recording = false;
@@ -223,33 +324,57 @@
     let copyArmed = false;
     let copiedTimer = null;
 
+    // R4: recorded offline response — no network when this button is used.
     const SAMPLE = {
       text: 'Patient is, uh, not allergic to penicillin, so give her twenty milligrams, um, twice daily.',
       llm_response: 'Patient is allergic to penicillin, so give her 20 mg twice daily.',
       llm_error: null,
       confidence: 0.91,
-      request_time_ms: 812,
+      request_time_ms: null,
       audio_duration_ms: 6400,
+      words: [
+        { text: 'Patient', confidence: 0.96 },
+        { text: 'is', confidence: 0.99 },
+        { text: 'uh', confidence: 0.4 },
+        { text: 'not', confidence: 0.88 },
+        { text: 'allergic', confidence: 0.97 },
+        { text: 'to', confidence: 0.99 },
+        { text: 'penicillin', confidence: 0.94 },
+        { text: 'so', confidence: 0.9 },
+        { text: 'give', confidence: 0.95 },
+        { text: 'her', confidence: 0.98 },
+        { text: 'twenty', confidence: 0.91 },
+        { text: 'milligrams', confidence: 0.9 },
+        { text: 'um', confidence: 0.35 },
+        { text: 'twice', confidence: 0.93 },
+        { text: 'daily', confidence: 0.94 },
+      ],
+      verdict: { level: 'high' },
+      findings: [{ direction: 'dropped', kind: 'negation', token: 'not' }],
+      offlineSample: true,
     };
 
-    async function runCheck(text, llm_response) {
-      const res = await fetch('/api/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, llm_response }),
-      });
-      if (!res.ok) throw new Error('check failed');
-      return res.json();
-    }
+    sampleBtn.addEventListener('click', () => {
+      clearError();
+      render(SAMPLE);
+    });
 
-    sampleBtn.addEventListener('click', async () => {
-      try {
-        clearError();
-        const checked = await runCheck(SAMPLE.text, SAMPLE.llm_response);
-        render({ ...SAMPLE, verdict: checked.verdict, findings: checked.findings });
-      } catch (err) {
-        showError('Could not run sample check.', String(err && err.message ? err.message : err));
+    pasteCheckBtn.addEventListener('click', () => {
+      clearError();
+      const text = pasteSaid.value;
+      const llm_response = pasteGot.value;
+      if (!text.trim() && !llm_response.trim()) {
+        showError('Paste both sides, or at least one side, before checking.', '');
+        return;
       }
+      const checked = ground(text, llm_response === '' ? '' : llm_response);
+      render({
+        text,
+        llm_response: llm_response === '' ? '' : llm_response,
+        verdict: checked.verdict,
+        findings: checked.findings,
+        pasteMode: true,
+      });
     });
 
     if (new URLSearchParams(location.search).get('sample') === '1') {
@@ -293,8 +418,10 @@
 
     window.addEventListener('keydown', (e) => {
       if (e.code !== 'Space') return;
-      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
-      if (document.activeElement === copyBtn) return;
+      const tag = e.target && e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+      if (document.activeElement === copyBtn || document.activeElement === pasteCheckBtn) return;
+      if (document.activeElement === pasteSaid || document.activeElement === pasteGot) return;
       e.preventDefault();
       if (recording) stopRecording();
       else startRecording();
@@ -308,18 +435,37 @@
     async function startRecording() {
       clearError();
       pcmChunks = [];
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioCtx = new AudioContext({ sampleRate: 48000 });
-      await audioCtx.audioWorklet.addModule('/pcm-processor.js');
-      const source = audioCtx.createMediaStreamSource(mediaStream);
-      workletNode = new AudioWorkletNode(audioCtx, 'pcm-processor');
-      workletNode.port.onmessage = (ev) => {
-        pcmChunks.push(new Int16Array(ev.data));
-      };
-      source.connect(workletNode);
-      recording = true;
-      recordBtn.textContent = 'Stop';
-      recordBtn.classList.add('recording');
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (err) {
+        const name = err && err.name ? err.name : 'Error';
+        const msg = err && err.message ? err.message : String(err);
+        if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+          showError('Microphone permission denied.', 'Allow the mic, or use Sample case / Paste mode.');
+        } else if (name === 'NotFoundError') {
+          showError('No microphone found.', 'Plug in a mic, or use Sample case / Paste mode.');
+        } else {
+          showError('Could not open the microphone.', msg);
+        }
+        return;
+      }
+      try {
+        audioCtx = new AudioContext({ sampleRate: 48000 });
+        await audioCtx.audioWorklet.addModule('/pcm-processor.js');
+        const source = audioCtx.createMediaStreamSource(mediaStream);
+        workletNode = new AudioWorkletNode(audioCtx, 'pcm-processor');
+        workletNode.port.onmessage = (ev) => {
+          pcmChunks.push(new Int16Array(ev.data));
+        };
+        source.connect(workletNode);
+        recording = true;
+        recordBtn.textContent = 'Stop';
+        recordBtn.classList.add('recording');
+      } catch (err) {
+        if (mediaStream) mediaStream.getTracks().forEach((t) => t.stop());
+        mediaStream = null;
+        showError('Audio capture failed.', String(err && err.message ? err.message : err));
+      }
     }
 
     async function stopRecording() {
@@ -411,46 +557,64 @@
       errorEl.classList.remove('show');
     }
 
-    async function render(data, roundTripMs) {
+    function render(data, roundTripMs) {
       clearError();
       const text = data.text ?? '';
       let rewrite = data.llm_response;
-      let findings = data.findings;
+      let findings = data.findings || [];
       let verdict = data.verdict;
 
       if (rewrite == null) {
         rewrite = text;
         verdict = { level: 'none' };
         findings = [];
-        verdictEl.hidden = false;
-        verdictEl.className = 'verdict none';
-        verdictEl.textContent = 'No rewrite came back. This is exactly what you said.';
+        setVerdict('none', 'No rewrite came back. This is exactly what you said.');
       } else {
-        if (!verdict || !findings) {
-          const checked = await runCheck(text, rewrite);
-          verdict = checked.verdict;
-          findings = checked.findings;
-        }
-        verdictEl.hidden = false;
-        verdictEl.className = `verdict ${verdict.level}`;
-        if (verdict.level === 'clean') {
-          verdictEl.textContent = 'Clean. The rewrite does not look like it changed the meaning.';
+        if (!verdict) {
+          setVerdict('clean', 'Clean. The rewrite does not look like it changed the meaning.');
+        } else if (verdict.level === 'clean') {
+          setVerdict('clean', 'Clean. The rewrite does not look like it changed the meaning.');
         } else if (verdict.level === 'none') {
-          verdictEl.textContent = 'No rewrite came back. This is exactly what you said.';
+          setVerdict('none', 'No rewrite came back. This is exactly what you said.');
+        } else if (verdict.level === 'high') {
+          setVerdict(
+            'high',
+            `Meaning may have changed. ${findings.length} finding(s) in the rewrite.`,
+          );
+        } else if (verdict.level === 'medium') {
+          setVerdict(
+            'medium',
+            `A name or entity differs. ${findings.length} finding(s) in the rewrite.`,
+          );
         } else {
-          verdictEl.textContent = `${verdict.level} severity — ${findings.length} finding(s).`;
+          setVerdict(verdict.level, `${verdict.level} severity — ${findings.length} finding(s).`);
         }
       }
 
+      if (data.offlineSample) {
+        sourceNote.textContent = 'Sample case from a recorded response. No API call was made.';
+        sourceNote.classList.add('show');
+      } else if (data.pasteMode) {
+        sourceNote.textContent = 'Paste check. No API call was made. Checker ran in the browser only.';
+        sourceNote.classList.add('show');
+      } else {
+        sourceNote.textContent = '';
+        sourceNote.classList.remove('show');
+      }
+
+      rewritePane.hidden = false;
+      verbatimPane.hidden = false;
+      const annotated = annotateFindings(findings, data.words || null);
+      rewriteEl.innerHTML = highlightRewrite(rewrite, annotated);
       verbatimEl.textContent = text;
-      rewriteEl.innerHTML = highlight(rewrite, findings);
+      renderFindings(annotated);
 
       lastRewriteText = rewrite ?? '';
-      highFindingCount = (findings || []).filter(
+      highFindingCount = (annotated || []).filter(
         (f) => f.kind === 'negation' || f.kind === 'number',
       ).length;
       if (verdict && verdict.level === 'high' && highFindingCount === 0) {
-        highFindingCount = (findings || []).length;
+        highFindingCount = (annotated || []).length;
       }
       copyArmed = false;
       if (copiedTimer) clearTimeout(copiedTimer);
@@ -458,6 +622,8 @@
       resetCopyLabel();
 
       const bits = [];
+      if (data.offlineSample) bits.push('no API call');
+      if (data.pasteMode) bits.push('paste mode · no API call');
       if (data.confidence != null) bits.push(`confidence ${Number(data.confidence).toFixed(2)}`);
       if (data.request_time_ms != null) bits.push(`upstream ${Math.round(data.request_time_ms)} ms`);
       if (roundTripMs != null) bits.push(`round-trip ${roundTripMs} ms`);
@@ -466,7 +632,43 @@
       metaEl.textContent = bits.join(' · ');
     }
 
-    function highlight(text, findings) {
+    function setVerdict(level, sentence) {
+      verdictEl.className = `verdict show ${level}`;
+      verdictEl.textContent = sentence;
+    }
+
+    function renderFindings(findings) {
+      findingsEl.innerHTML = '';
+      if (!findings || !findings.length) {
+        findingsEl.classList.remove('show');
+        return;
+      }
+      findingsEl.classList.add('show');
+      for (const f of findings) {
+        const li = document.createElement('li');
+        const sev = f.kind === 'entity' ? 'medium' : 'high';
+        let label =
+          f.direction === 'dropped'
+            ? `Dropped ${f.kind}: “${f.token}” was in the verbatim and is missing from the rewrite.`
+            : `Inserted ${f.kind}: “${f.token}” appears in the rewrite and does not trace back to the verbatim.`;
+        if (f.direction === 'dropped' && f.cause === 'rewrite') {
+          label += ` Cause: likely rewrite (STT confidence ${formatConf(f.word_confidence)} >= 0.5).`;
+        } else if (f.direction === 'dropped' && f.cause === 'mishearing') {
+          label += ` Cause: likely mishearing (STT confidence ${formatConf(f.word_confidence)} < 0.5).`;
+        } else if (f.direction === 'dropped' && f.cause === 'unknown') {
+          label += ' Cause: unknown (no matching word confidence).';
+        }
+        li.innerHTML = `<span class="tag ${sev}">${sev}</span>${escapeHtml(label)}`;
+        findingsEl.appendChild(li);
+      }
+    }
+
+    function formatConf(n) {
+      if (n == null || Number.isNaN(Number(n))) return '?';
+      return Number(n).toFixed(2);
+    }
+
+    function highlightRewrite(text, findings) {
       if (!findings || !findings.length) return escapeHtml(text);
       let html = escapeHtml(text);
       const inserted = findings.filter((f) => f.direction === 'inserted');
@@ -475,6 +677,15 @@
         const re = new RegExp(`\\b(${escapeRegExp(f.token)})\\b`, 'ig');
         const cls = f.kind === 'entity' ? 'medium' : 'high';
         html = html.replace(re, `<mark class="${cls}">$1</mark>`);
+      }
+      const dropped = findings.filter(
+        (f) => f.direction === 'dropped' && f.token && !f.token.startsWith('['),
+      );
+      if (dropped.length) {
+        const gaps = dropped
+          .map((f) => `<mark class="gap">missing ${escapeHtml(f.token)}</mark>`)
+          .join(' ');
+        html = `${html} <span aria-hidden="true">${gaps}</span>`;
       }
       return html;
     }

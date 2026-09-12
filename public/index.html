@@ -3,226 +3,388 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Redline — see when cleanup changes meaning</title>
+  <title>Redline: see when cleanup changes meaning</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/site.css" />
   <style>
-    body {
-      background:
-        radial-gradient(900px 480px at 70% -5%, #d7e4ff 0%, transparent 55%),
-        linear-gradient(180deg, #eef1f5 0%, var(--bg) 42%, #fff 100%);
+    :root {
+      --landing-bg: #faf9f6;
+      --landing-ink: #121212;
+      --landing-muted: #6b6b6b;
+      --landing-line: rgba(18, 18, 18, 0.1);
+      --landing-accent: #7ec4f0;
+      --landing-accent-strong: #3d8ec4;
+      --landing-accent-soft: #eef7fd;
+      --landing-serif: "Instrument Serif", "Georgia", serif;
+    }
+
+    body.landing {
+      background: var(--landing-bg);
+      color: var(--landing-ink);
+      position: relative;
       overflow-x: hidden;
     }
 
-    .top {
-      max-width: 1100px;
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent calc(8.333% - 1px),
+          rgba(18, 18, 18, 0.045) calc(8.333% - 1px),
+          rgba(18, 18, 18, 0.045) 8.333%
+        );
+      mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 1.25rem 1.5rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 1rem;
+      padding-top: 1.35rem;
+      padding-bottom: 1.35rem;
+    }
+
+    .brand {
+      justify-self: start;
+      font-family: var(--landing-serif);
+      font-weight: 400;
+      font-size: 1.65rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand img {
+      width: 1.75rem;
+      height: 1.75rem;
+    }
+
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.1rem;
+      padding: 0.35rem 0.45rem;
+      border: 1px solid var(--landing-line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-pill a {
+      text-decoration: none;
+      color: var(--landing-muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 0.45rem 0.75rem;
+      border-radius: 999px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .nav-pill a:hover {
+      color: var(--landing-ink);
+      background: rgba(18, 18, 18, 0.04);
+    }
+
+    .top-actions {
+      justify-self: end;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: 1rem;
     }
 
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      font-size: 0.95rem;
-      color: var(--muted);
-    }
-    .nav a {
-      text-decoration: none;
-    }
-    .nav a:hover { color: var(--ink); }
-
-    .hero {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 3rem;
-      align-items: center;
-      min-height: calc(100vh - 5rem);
+    .top-meta {
+      font-size: 0.92rem;
+      color: var(--landing-muted);
+      white-space: nowrap;
     }
 
-    @media (max-width: 900px) {
-      .hero {
-        grid-template-columns: 1fr;
-        min-height: auto;
-        padding-top: 1.5rem;
-      }
-      .nav { display: none; }
-    }
-
-    .eyebrow {
+    .btn-dark,
+    .btn-outline {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--blue);
+      justify-content: center;
+      gap: 0.55rem;
+      text-decoration: none;
+      border-radius: 999px;
       font-weight: 600;
-      margin-bottom: 1rem;
+      font-size: 0.92rem;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-dark {
+      background: var(--landing-ink);
+      border: 1px solid var(--landing-ink);
+      color: #fff;
+      padding: 0.62rem 1.05rem;
+    }
+
+    .btn-dark:hover {
+      background: #2a2a2a;
+      border-color: #2a2a2a;
+    }
+
+    .btn-dark .icon-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.35rem;
+      height: 1.35rem;
+      border-radius: 50%;
+      background: var(--landing-accent-soft);
+      color: var(--landing-accent-strong);
+      border: 1px solid var(--landing-accent);
+    }
+
+    .btn-dark svg,
+    .btn-outline svg {
+      width: 0.95rem;
+      height: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .btn-lg {
+      padding: 0.85rem 1.35rem;
+      font-size: 1rem;
+    }
+
+    .btn-lg.btn-dark .icon-wrap {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .btn-outline {
+      background: #fff;
+      border: 1px solid var(--landing-line);
+      color: var(--landing-ink);
+      padding: 0.85rem 1.35rem;
+    }
+
+    .btn-outline:hover {
+      border-color: rgba(18, 18, 18, 0.22);
+      background: #fff;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 3.5rem 0 2.5rem;
+      max-width: 52rem;
+    }
+
+    .badge-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.35rem 0.85rem 0.35rem 0.35rem;
+      border: 1px solid var(--landing-line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      margin-bottom: 1.75rem;
+      font-size: 0.88rem;
+      color: var(--landing-muted);
+    }
+
+    .badge-new {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: var(--landing-accent-soft);
+      color: var(--landing-accent-strong);
+      border: 1px solid var(--landing-accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
     }
 
     .hero h1 {
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: clamp(2.6rem, 6vw, 4.4rem);
-      letter-spacing: -0.055em;
-      line-height: 0.98;
-      margin: 0 0 1.1rem;
-      max-width: 11ch;
+      font-family: var(--landing-serif);
+      font-weight: 400;
+      font-size: clamp(2.8rem, 7vw, 4.5rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      margin: 0 0 1.25rem;
     }
 
-    .hero .lede {
-      margin: 0 0 1.75rem;
-      color: var(--muted);
-      font-size: 1.15rem;
+    .hero .sub {
+      margin: 0 auto 2rem;
       max-width: 34rem;
+      color: var(--landing-muted);
+      font-size: 1.12rem;
+      line-height: 1.55;
+    }
+
+    .hero .sub code,
+    .point p code,
+    .try-item code,
+    .evidence-note code {
+      font-size: 0.9em;
+      background: var(--landing-accent-soft);
+      color: var(--landing-accent-strong);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
     }
 
     .cta-row {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 0.75rem;
-      align-items: center;
+      margin-bottom: 3.25rem;
     }
 
-    .cta-row a.btn {
-      display: inline-flex;
-      align-items: center;
-      text-decoration: none;
-      border-radius: 999px;
-      padding: 0.8rem 1.35rem;
-      border: 1px solid var(--ink);
-      background: var(--bg-elev);
-      font-weight: 600;
-    }
-    .cta-row a.btn.primary {
-      background: var(--blue);
-      border-color: var(--blue);
-      color: #fff;
-    }
-    .cta-row a.btn.primary:hover {
-      background: var(--blue-deep);
-      border-color: var(--blue-deep);
+    .stage-wrap {
+      max-width: 38rem;
+      margin: 0 auto;
     }
 
     .stage {
-      position: relative;
-      border-radius: 28px;
-      background:
-        linear-gradient(160deg, #fff 0%, #f7f9fc 100%);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      padding: 1.5rem;
-      animation: rise 0.8s ease both;
-    }
-
-    .stage::before {
-      content: "";
-      position: absolute;
-      inset: auto -8% -12% 18%;
-      height: 55%;
-      background: radial-gradient(ellipse at center, rgba(0, 85, 255, 0.18), transparent 70%);
-      z-index: -1;
-      pointer-events: none;
+      border: 1px solid var(--landing-line);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(10px);
+      padding: 1.35rem;
+      box-shadow: 0 28px 70px rgba(18, 18, 18, 0.06);
     }
 
     .stage-label {
       font-size: 0.72rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--landing-muted);
       font-weight: 600;
       margin-bottom: 0.85rem;
+      text-align: left;
     }
 
     .compare {
       display: grid;
-      gap: 0.85rem;
+      gap: 0.75rem;
     }
 
     .strip {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 1rem 1.1rem;
+      border: 1px solid var(--landing-line);
+      border-radius: 14px;
+      padding: 0.95rem 1rem;
       background: #fff;
+      text-align: left;
     }
 
     .strip strong {
       display: block;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.45rem;
+      color: var(--landing-muted);
+      margin-bottom: 0.4rem;
       font-weight: 600;
     }
 
     .strip p {
       margin: 0;
-      font-size: 1.05rem;
+      font-size: 1rem;
       line-height: 1.45;
     }
 
     .strip.dirty {
-      border-color: #f3b4b0;
-      background: linear-gradient(180deg, #fff 60%, var(--high-bg));
-    }
-
-    .strike {
-      text-decoration: line-through;
-      color: var(--high);
-      background: var(--high-bg);
-      padding: 0 0.15em;
-      border-radius: 3px;
+      border-color: #efc9c7;
+      background: linear-gradient(180deg, #fff 55%, #fdf0ef 100%);
     }
 
     .flag {
-      margin-top: 0.9rem;
+      margin-top: 0.85rem;
       display: inline-flex;
       align-items: center;
       gap: 0.45rem;
-      padding: 0.55rem 0.8rem;
+      padding: 0.5rem 0.8rem;
       border-radius: 999px;
       background: var(--high-bg);
       color: var(--high);
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 600;
     }
 
     .pulse-dot {
-      width: 0.55rem;
-      height: 0.55rem;
+      width: 0.5rem;
+      height: 0.5rem;
       border-radius: 50%;
       background: var(--high);
       animation: blink 1.4s ease-in-out infinite;
     }
 
-    .below {
-      max-width: 1100px;
+    .section {
+      padding: 4.5rem 0;
+      border-top: 1px solid var(--landing-line);
+    }
+
+    .section h2 {
+      font-family: var(--landing-serif);
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      letter-spacing: -0.03em;
+      margin: 0 0 0.75rem;
+      text-align: center;
+    }
+
+    .section > .intro {
+      color: var(--landing-muted);
+      max-width: 42rem;
+      margin: 0 auto 2.5rem;
+      text-align: center;
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+
+    .gap-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      max-width: 52rem;
       margin: 0 auto;
-      padding: 0 1.5rem 5rem;
     }
 
-    .below h2 {
-      font-family: var(--font-display);
-      font-size: clamp(1.6rem, 3vw, 2.1rem);
-      letter-spacing: -0.04em;
-      margin: 0 0 0.6rem;
+    .gap-card {
+      border: 1px solid var(--landing-line);
+      border-radius: 18px;
+      padding: 1.35rem;
+      background: rgba(255, 255, 255, 0.65);
+      text-align: left;
     }
 
-    .below > p {
-      color: var(--muted);
-      max-width: 40rem;
-      margin: 0 0 1.75rem;
+    .gap-card h3 {
+      font-family: var(--landing-serif);
+      font-size: 1.25rem;
+      font-weight: 400;
+      margin: 0 0 0.5rem;
+    }
+
+    .gap-card p {
+      margin: 0;
+      color: var(--landing-muted);
+      font-size: 0.96rem;
+      line-height: 1.5;
+    }
+
+    .gap-card code {
+      font-size: 0.88rem;
+      background: var(--landing-accent-soft);
+      color: var(--landing-accent-strong);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
     }
 
     .points {
@@ -231,44 +393,177 @@
       gap: 1.25rem;
     }
 
-    @media (max-width: 800px) {
-      .points { grid-template-columns: 1fr; }
+    .point {
+      border: 1px solid var(--landing-line);
+      border-radius: 18px;
+      padding: 1.35rem;
+      background: rgba(255, 255, 255, 0.65);
     }
 
     .point h3 {
-      font-family: var(--font-display);
-      font-size: 1.15rem;
-      letter-spacing: -0.03em;
-      margin: 0 0 0.4rem;
+      font-family: var(--landing-serif);
+      font-size: 1.35rem;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.45rem;
     }
 
     .point p {
       margin: 0;
-      color: var(--muted);
-      font-size: 0.98rem;
+      color: var(--landing-muted);
+      font-size: 0.96rem;
+      line-height: 1.5;
     }
 
     .point-num {
-      font-family: var(--font-display);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--landing-accent-strong);
+      margin-bottom: 0.65rem;
+      font-weight: 600;
+    }
+
+    .try-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      max-width: 52rem;
+      margin: 0 auto;
+    }
+
+    .try-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      border: 1px solid var(--landing-line);
+      border-radius: 18px;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.65);
+      text-align: left;
+    }
+
+    .try-item .num {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--landing-accent-soft);
+      color: var(--landing-accent-strong);
       font-weight: 700;
-      color: var(--blue);
       font-size: 0.85rem;
-      letter-spacing: 0.06em;
-      margin-bottom: 0.55rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .try-item h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.35rem;
+    }
+
+    .try-item p {
+      margin: 0;
+      color: var(--landing-muted);
+      font-size: 0.94rem;
+      line-height: 1.45;
+    }
+
+    .try-item a {
+      color: var(--landing-accent-strong);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .try-item a:hover {
+      text-decoration: underline;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      max-width: 52rem;
+      margin: 0 auto 2rem;
+    }
+
+    .stat {
+      border: 1px solid var(--landing-line);
+      border-radius: 18px;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.65);
+      text-align: center;
+    }
+
+    .stat .val {
+      font-family: var(--landing-serif);
+      font-size: 2.4rem;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+      color: var(--landing-ink);
+    }
+
+    .stat .val.accent {
+      color: var(--landing-accent-strong);
+    }
+
+    .stat .lbl {
+      font-size: 0.82rem;
+      color: var(--landing-muted);
+      line-height: 1.35;
+    }
+
+    .evidence-note {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 1.1rem 1.25rem;
+      border-radius: 14px;
+      border: 1px solid var(--landing-line);
+      background: var(--landing-accent-soft);
+      color: var(--landing-ink);
+      font-size: 0.94rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .repo-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      max-width: 52rem;
+      margin: 0 auto;
+    }
+
+    .repo-item {
+      border: 1px solid var(--landing-line);
+      border-radius: 18px;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.65);
+      text-align: left;
+    }
+
+    .repo-item h3 {
+      font-family: var(--landing-serif);
+      font-size: 1.2rem;
+      font-weight: 400;
+      margin: 0 0 0.4rem;
+      color: var(--landing-ink);
+    }
+
+    .repo-item p {
+      margin: 0;
+      color: var(--landing-muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
     }
 
     footer {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 1.5rem;
-      color: var(--muted);
+      padding: 1.5rem 0 2.5rem;
+      color: var(--landing-muted);
       font-size: 0.9rem;
-      border-top: 1px solid var(--line);
-    }
-
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(18px); }
-      to { opacity: 1; transform: translateY(0); }
+      text-align: center;
+      border-top: 1px solid var(--landing-line);
     }
 
     @keyframes blink {
@@ -276,81 +571,367 @@
       50% { opacity: 0.25; }
     }
 
-    .hero-copy {
-      animation: rise 0.7s ease both;
+    @media (max-width: 900px) {
+      .top {
+        grid-template-columns: 1fr auto;
+      }
+
+      .nav-pill {
+        display: none;
+      }
+
+      .top-meta {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 2rem;
+      }
+
+      .points,
+      .gap-grid,
+      .try-list,
+      .repo-list {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .cta-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-lg {
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pulse-dot {
+        animation: none;
+      }
     }
   </style>
 </head>
-<body>
-  <header class="top">
-    <a class="brand" href="/">
-      <img src="/logo.png" alt="" width="32" height="32" />
+<body class="landing">
+  <div class="grid-bg" aria-hidden="true"></div>
+
+  <header class="shell top">
+    <a class="brand reveal" href="/" data-gsap="header">
+      <img src="/logo.png" alt="" width="28" height="28" />
       <span>Redline</span>
     </a>
-    <nav class="nav" aria-label="Primary">
+
+    <nav class="nav-pill reveal" aria-label="Primary" data-gsap="header">
+      <a href="#gap">Problem</a>
       <a href="#how">How it works</a>
-      <a href="/app.html">Open dictation</a>
+      <a href="#try">Demo</a>
+      <a href="#evidence">Corpus</a>
     </nav>
-    <a class="btn primary" href="/app.html" style="display:inline-flex;text-decoration:none;border-radius:999px;padding:0.7rem 1.15rem;background:var(--blue);border:1px solid var(--blue);color:#fff;font-weight:600;">Open app</a>
+
+    <div class="top-actions reveal" data-gsap="header">
+      <span class="top-meta">Deterministic checker</span>
+      <a class="btn-dark" href="/app.html">
+        <span class="icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </span>
+        Open app
+      </a>
+    </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-copy">
-      <div class="eyebrow">Dictation audit</div>
-      <h1>Redline</h1>
-      <p class="lede">
-        The cleanup can change what you said, and this shows you when it does.
-        Verbatim on one side. Rewrite on the other. Drift marked in place.
-      </p>
-      <div class="cta-row">
-        <a class="btn primary" href="/app.html">Start dictating</a>
-        <a class="btn" href="/app.html?sample=1">See the sample case</a>
-      </div>
+  <main class="shell hero">
+    <div class="badge-row reveal" data-gsap="hero">
+      <span class="badge-new">Entry</span>
+      <span>AssemblyAI Dictation hackathon</span>
     </div>
 
-    <div class="stage" aria-hidden="true">
-      <div class="stage-label">What the API returns</div>
-      <div class="compare">
-        <div class="strip">
-          <strong>Verbatim</strong>
-          <p>Patient is <b>not</b> allergic to penicillin…</p>
+    <h1 class="reveal" data-gsap="hero">See when cleanup changes what you said.</h1>
+
+    <p class="sub reveal" data-gsap="hero">
+      The Dictation API returns <code>text</code> and <code>llm_response</code> from the
+      same recording. Redline compares them and flags tokens that do not line up.
+    </p>
+
+    <div class="cta-row reveal" data-gsap="hero">
+      <a class="btn-dark btn-lg" href="/app.html">
+        <span class="icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </span>
+        Open dictation
+      </a>
+      <a class="btn-outline btn-lg" href="/app.html?sample=1">Sample case (no API call)</a>
+    </div>
+
+    <div class="stage-wrap reveal" data-gsap="hero">
+      <div class="stage" aria-label="Example API response">
+        <div class="stage-label">What the API returns</div>
+        <div class="compare">
+          <div class="strip">
+            <strong>Verbatim (<code>text</code>)</strong>
+            <p>Patient is <b>not</b> allergic to penicillin.</p>
+          </div>
+          <div class="strip dirty">
+            <strong>Rewrite (<code>llm_response</code>)</strong>
+            <p>Patient is allergic to penicillin.</p>
+          </div>
         </div>
-        <div class="strip dirty">
-          <strong>Rewrite · HTTP 200 · llm_error null</strong>
-          <p>Patient is allergic to penicillin…</p>
-        </div>
+        <div class="flag"><span class="pulse-dot"></span> High: dropped negation</div>
       </div>
-      <div class="flag"><span class="pulse-dot"></span> High · dropped negation</div>
+    </div>
+  </main>
+
+  <section class="shell section" id="gap">
+    <h2 class="reveal" data-gsap="scroll">Problem</h2>
+    <p class="intro reveal" data-gsap="scroll">
+      Most dictation apps show only the rewrite. The verbatim string is in the same
+      JSON response. If the rewrite drops a negation or changes a number, you still
+      get HTTP 200 and <code>llm_error: null</code>.
+    </p>
+    <div class="gap-grid">
+      <div class="gap-card reveal" data-gsap="scroll">
+        <h3>Two strings per request</h3>
+        <p>
+          <code>text</code> is the STT output. <code>llm_response</code> is the cleanup.
+          They are returned together.
+        </p>
+      </div>
+      <div class="gap-card reveal" data-gsap="scroll">
+        <h3>No error when meaning shifts</h3>
+        <p>
+          A bad rewrite does not fail the request. You only see the drift if you
+          compare the two fields.
+        </p>
+      </div>
+      <div class="gap-card reveal" data-gsap="scroll">
+        <h3>Deterministic checker</h3>
+        <p>
+          Token rules for negations, numbers, and entities. No second model call.
+        </p>
+      </div>
+      <div class="gap-card reveal" data-gsap="scroll">
+        <h3>UI is the demo</h3>
+        <p>
+          The submission is the checker and a 15-clip corpus. False positives and
+          misses are documented in the results writeup.
+        </p>
+      </div>
     </div>
   </section>
 
-  <section class="below" id="how">
-    <h2>How it works</h2>
-    <p>
-      AssemblyAI Dictation returns both the verbatim transcript and an LLM rewrite.
-      Redline aligns them with a deterministic checker — no second model grading the first.
+  <section class="shell section" id="how">
+    <h2 class="reveal" data-gsap="scroll">How it works</h2>
+    <p class="intro reveal" data-gsap="scroll">
+      Verdict first, then the marked rewrite, a findings list, and the verbatim
+      transcript below.
     </p>
     <div class="points">
-      <div class="point">
-        <div class="point-num">01</div>
-        <h3>Speak</h3>
-        <p>Record from the browser as 16-bit PCM. Space starts and stops when the app has focus.</p>
+      <div class="point reveal" data-gsap="scroll">
+        <div class="point-num">1</div>
+        <h3>Record</h3>
+        <p>AudioWorklet to 16-bit PCM WAV. Space toggles recording when no input is focused.</p>
       </div>
-      <div class="point">
-        <div class="point-num">02</div>
-        <h3>Compare</h3>
-        <p>Negations, numbers, and invented names are checked against the verbatim string.</p>
+      <div class="point reveal" data-gsap="scroll">
+        <div class="point-num">2</div>
+        <h3>Check</h3>
+        <p>The checker runs on the API pair. Dropped tokens can be tagged as likely mishearing or rewrite using word confidence.</p>
       </div>
-      <div class="point">
-        <div class="point-num">03</div>
-        <h3>Copy with a guard</h3>
-        <p>High-severity findings require a second confirm before the rewrite hits the clipboard.</p>
+      <div class="point reveal" data-gsap="scroll">
+        <div class="point-num">3</div>
+        <h3>Copy</h3>
+        <p>High-severity findings need a second click before the rewrite is copied.</p>
       </div>
     </div>
   </section>
 
-  <footer>
-    Redline · AssemblyAI Dictation API · see RESULTS.md for the corpus
+  <section class="shell section" id="try">
+    <h2 class="reveal" data-gsap="scroll">Demo</h2>
+    <p class="intro reveal" data-gsap="scroll">
+      Two of these work without an API key.
+    </p>
+    <div class="try-list">
+      <div class="try-item reveal" data-gsap="scroll">
+        <span class="num">1</span>
+        <div>
+          <h3>Sample case</h3>
+          <p>Fixed penicillin example. Dropped negation, no network. <a href="/app.html?sample=1">Open sample</a></p>
+        </div>
+      </div>
+      <div class="try-item reveal" data-gsap="scroll">
+        <span class="num">2</span>
+        <div>
+          <h3>Paste mode</h3>
+          <p>Paste verbatim and rewrite. Checker runs in the browser. <a href="/app.html">Open app</a></p>
+        </div>
+      </div>
+      <div class="try-item reveal" data-gsap="scroll">
+        <span class="num">3</span>
+        <div>
+          <h3>Live record</h3>
+          <p>Record a line with a negation. See if the rewrite keeps it. Requires an API key on the server.</p>
+        </div>
+      </div>
+      <div class="try-item reveal" data-gsap="scroll">
+        <span class="num">4</span>
+        <div>
+          <h3>Copy guard</h3>
+          <p>On a high verdict, copy asks for confirmation first.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell section" id="evidence">
+    <h2 class="reveal" data-gsap="scroll">15-clip corpus</h2>
+    <p class="intro reveal" data-gsap="scroll">
+      Six categories, default API config, run on 2026-09-12. Counts only. The sample
+      is too small for percentages.
+    </p>
+    <div class="stats">
+      <div class="stat reveal" data-gsap="scroll">
+        <div class="val">15</div>
+        <div class="lbl">clips published</div>
+      </div>
+      <div class="stat reveal" data-gsap="scroll">
+        <div class="val accent">2</div>
+        <div class="lbl">high-severity verdicts</div>
+      </div>
+      <div class="stat reveal" data-gsap="scroll">
+        <div class="val">1</div>
+        <div class="lbl">medium verdict</div>
+      </div>
+      <div class="stat reveal" data-gsap="scroll">
+        <div class="val">12</div>
+        <div class="lbl">clean</div>
+      </div>
+    </div>
+    <p class="evidence-note reveal" data-gsap="scroll">
+      One spoken-command clip returned only <code>CONFIRMED</code> and the checker
+      called it clean. False positives include contractions and discourse
+      <code>no</code> in self-corrections. Full quotes and tables are in the results
+      writeup.
+    </p>
+  </section>
+
+  <section class="shell section" id="submission">
+    <h2 class="reveal" data-gsap="scroll">Submission</h2>
+    <p class="intro reveal" data-gsap="scroll">
+      Three deliverables beside the demo app.
+    </p>
+    <div class="repo-list">
+      <div class="repo-item reveal" data-gsap="scroll">
+        <h3>Checker</h3>
+        <p>Deterministic aligner with unit tests. Known false positives documented.</p>
+      </div>
+      <div class="repo-item reveal" data-gsap="scroll">
+        <h3>Corpus results</h3>
+        <p>Method, category counts, quoted drift cases, false positives, and one miss.</p>
+      </div>
+      <div class="repo-item reveal" data-gsap="scroll">
+        <h3>API feedback</h3>
+        <p>Docs and SDK issues found during the build: endpoint path, key error code, field limits.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="shell">
+    Redline. AssemblyAI Hack into Dictation. Demilade Ayeku. 2026.
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script>
+    (function () {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function showAll() {
+        document.querySelectorAll('[data-gsap]').forEach((el) => {
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+        });
+      }
+
+      if (reduced || typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+        showAll();
+        return;
+      }
+
+      try {
+        gsap.registerPlugin(ScrollTrigger);
+
+        gsap.from('[data-gsap="header"]', {
+          y: -18,
+          opacity: 0,
+          duration: 0.7,
+          stagger: 0.08,
+          ease: 'power2.out',
+        });
+
+        gsap.from('[data-gsap="hero"]', {
+          y: 28,
+          opacity: 0,
+          duration: 0.85,
+          stagger: 0.1,
+          delay: 0.15,
+          ease: 'power3.out',
+        });
+
+        document.querySelectorAll('.section').forEach((section) => {
+          const items = section.querySelectorAll('[data-gsap="scroll"]');
+          if (!items.length) return;
+          gsap.set(items, { y: 32, opacity: 0 });
+          gsap.to(items, {
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 82%',
+              once: true,
+            },
+            y: 0,
+            opacity: 1,
+            duration: 0.75,
+            stagger: 0.08,
+            ease: 'power2.out',
+          });
+        });
+
+        document.querySelectorAll('.stat .val').forEach((el) => {
+          const target = Number.parseInt(el.textContent, 10);
+          if (Number.isNaN(target)) return;
+          const counter = { n: 0 };
+          gsap.to(counter, {
+            scrollTrigger: {
+              trigger: '#evidence',
+              start: 'top 75%',
+              once: true,
+            },
+            n: target,
+            duration: 1,
+            ease: 'power1.out',
+            onUpdate: () => {
+              el.textContent = String(Math.round(counter.n));
+            },
+          });
+        });
+      } catch (err) {
+        console.error('GSAP init failed:', err);
+        showAll();
+      }
+    })();
+  </script>
 </body>
 </html>

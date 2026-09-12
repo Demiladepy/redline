@@ -1,41 +1,7 @@
 /**
  * Deterministic meaning checker: align verbatim transcript vs LLM rewrite.
  * No model calls. Findings are the product.
- * Erasable TypeScript only (Node --experimental-strip-types).
  */
-
-export type VerdictLevel = 'none' | 'clean' | 'medium' | 'high';
-export type FindingDirection = 'dropped' | 'inserted';
-export type FindingKind = 'negation' | 'number' | 'entity';
-
-export type Finding = {
-  direction: FindingDirection;
-  kind: FindingKind;
-  token: string;
-};
-
-export type GroundResult = {
-  verdict: { level: VerdictLevel };
-  findings: Finding[];
-};
-
-export type WordConfidence = {
-  text: string;
-  confidence: number;
-};
-
-/** R9: display-only cause. Does not change severity. Threshold 0.5 is provisional. */
-export type DropCause = 'mishearing' | 'rewrite' | 'unknown';
-
-export type AnnotatedFinding = Finding & {
-  cause?: DropCause;
-  word_confidence?: number | null;
-};
-
-type NormToken = string | string[];
-
-/** STT confidence below this → treat dropped token as likely mishearing. */
-export const WORD_CONFIDENCE_THRESHOLD = 0.5;
 
 const FILLERS = new Set([
   'uh',
@@ -58,7 +24,7 @@ const FILLERS = new Set([
   'huh',
 ]);
 
-const FILLER_PHRASES: string[][] = [['you', 'know']];
+const FILLER_PHRASES = [['you', 'know']];
 
 const NEGATIONS = new Set([
   'not',
@@ -112,7 +78,7 @@ const NEGATIVE_PREDICATES = new Set([
   'refused',
 ]);
 
-const UNIT_ALIASES = new Map<string, string>([
+const UNIT_ALIASES = new Map([
   ['mg', 'milligram'],
   ['milligrams', 'milligram'],
   ['milligram', 'milligram'],
@@ -125,10 +91,10 @@ const UNIT_ALIASES = new Map<string, string>([
   ['milliliters', 'milliliter'],
   ['millilitres', 'milliliter'],
   ['mcg', 'microgram'],
-  ['µg', 'microgram'],
+  ['┬╡g', 'microgram'],
 ]);
 
-const NUMBER_WORDS = new Map<string, number>([
+const NUMBER_WORDS = new Map([
   ['zero', 0],
   ['oh', 0],
   ['one', 1],
@@ -252,10 +218,12 @@ const STOPWORDS = new Set([
   'scan',
 ]);
 
-export function ground(
-  verbatim: string,
-  rewrite: string | null | undefined,
-): GroundResult {
+/**
+ * @param {string} verbatim
+ * @param {string | null | undefined} rewrite
+ * @returns {{ verdict: { level: string }, findings: Array<{ direction: string, kind: string, token: string }> }}
+ */
+export function ground(verbatim, rewrite) {
   if (rewrite == null || rewrite === '') {
     return { verdict: { level: 'none' }, findings: [] };
   }
@@ -263,7 +231,8 @@ export function ground(
   const left = prepare(String(verbatim ?? ''));
   const right = prepare(String(rewrite));
 
-  const findings: Finding[] = [];
+  const findings = [];
+
   findings.push(...diffNegations(left, right));
   findings.push(...diffNumbers(left, right));
   findings.push(...diffEntities(left, right));
@@ -272,60 +241,14 @@ export function ground(
   return { verdict: { level }, findings };
 }
 
-/**
- * For each dropped finding, attach a cause from per-word STT confidence.
- * Does not change verdict severity (R9).
- */
-export function annotateFindings(
-  findings: Finding[],
-  words?: WordConfidence[] | null,
-): AnnotatedFinding[] {
-  if (!findings.length) return [];
-  if (!words || !words.length) {
-    return findings.map((f) =>
-      f.direction === 'dropped'
-        ? { ...f, cause: 'unknown' as DropCause, word_confidence: null }
-        : { ...f },
-    );
-  }
-
-  const pool = words.map((w) => ({
-    key: normalizeWordKey(w.text),
-    confidence: Number(w.confidence),
-    used: false,
-  }));
-
-  return findings.map((f) => {
-    if (f.direction !== 'dropped' || !f.token || f.token.startsWith('[')) {
-      return { ...f };
-    }
-    const key = normalizeWordKey(f.token);
-    const hit = pool.find((p) => !p.used && p.key === key);
-    if (!hit || Number.isNaN(hit.confidence)) {
-      return { ...f, cause: 'unknown' as DropCause, word_confidence: null };
-    }
-    hit.used = true;
-    const cause: DropCause =
-      hit.confidence < WORD_CONFIDENCE_THRESHOLD ? 'mishearing' : 'rewrite';
-    return { ...f, cause, word_confidence: hit.confidence };
-  });
-}
-
-function normalizeWordKey(text: string): string {
-  return String(text)
-    .toLowerCase()
-    .replace(/[^\w']/g, '')
-    .replace(/^'+|'+$/g, '');
-}
-
-function prepare(text: string): NormToken[] {
+function prepare(text) {
   const raw = tokenize(text);
   const collapsed = collapseStammers(raw);
   const withoutFillers = stripFillers(collapsed);
   return withoutFillers.map(normalizeToken);
 }
 
-function tokenize(text: string): string[] {
+function tokenize(text) {
   return text
     .toLowerCase()
     .replace(/(\d),(\d)/g, '$1$2')
@@ -335,8 +258,8 @@ function tokenize(text: string): string[] {
     .filter(Boolean);
 }
 
-function collapseStammers(tokens: string[]): string[] {
-  const out: string[] = [];
+function collapseStammers(tokens) {
+  const out = [];
   for (const t of tokens) {
     if (out.length && out[out.length - 1] === t) continue;
     out.push(t);
@@ -344,8 +267,8 @@ function collapseStammers(tokens: string[]): string[] {
   return out;
 }
 
-function stripFillers(tokens: string[]): string[] {
-  const out: string[] = [];
+function stripFillers(tokens) {
+  const out = [];
   for (let i = 0; i < tokens.length; i++) {
     let skippedPhrase = false;
     for (const phrase of FILLER_PHRASES) {
@@ -365,13 +288,17 @@ function stripFillers(tokens: string[]): string[] {
   return out;
 }
 
-function normalizeToken(token: string): NormToken {
-  const t = token.toLowerCase();
-  if (UNIT_ALIASES.has(t)) return UNIT_ALIASES.get(t)!;
+function normalizeToken(token) {
+  let t = token.toLowerCase();
+  if (t.endsWith("n't")) {
+    // keep as negation signal via split below
+  }
+  if (UNIT_ALIASES.has(t)) return UNIT_ALIASES.get(t);
   if (NUMBER_WORDS.has(t)) return `num:${NUMBER_WORDS.get(t)}`;
   const compact = t.replace(/,/g, '');
   if (/^\d+(\.\d+)?$/.test(compact)) return `num:${Number(compact)}`;
-  const glued = compact.match(/^(\d+(?:\.\d+)?)([a-zµ]+)$/);
+  // "20mg" style
+  const glued = compact.match(/^(\d+(?:\.\d+)?)([a-z┬╡]+)$/);
   if (glued) {
     const unit = UNIT_ALIASES.get(glued[2]) ?? glued[2];
     return [`num:${Number(glued[1])}`, unit];
@@ -379,8 +306,8 @@ function normalizeToken(token: string): NormToken {
   return t;
 }
 
-function flatten(tokens: NormToken[]): string[] {
-  const out: string[] = [];
+function flatten(tokens) {
+  const out = [];
   for (const t of tokens) {
     if (Array.isArray(t)) out.push(...t);
     else out.push(t);
@@ -388,7 +315,15 @@ function flatten(tokens: NormToken[]): string[] {
   return out;
 }
 
-function polarityCount(tokens: NormToken[]): number {
+function bag(tokens) {
+  const m = new Map();
+  for (const t of flatten(tokens)) {
+    m.set(t, (m.get(t) ?? 0) + 1);
+  }
+  return m;
+}
+
+function polarityCount(tokens) {
   let n = 0;
   for (const t of flatten(tokens)) {
     if (t === "n't" || NEGATIONS.has(t)) n += 1;
@@ -397,11 +332,12 @@ function polarityCount(tokens: NormToken[]): number {
   return n;
 }
 
-function diffNegations(left: NormToken[], right: NormToken[]): Finding[] {
-  const findings: Finding[] = [];
+function diffNegations(left, right) {
+  const findings = [];
   const leftBag = negationBag(left);
   const rightBag = negationBag(right);
 
+  // Token-level not/never/etc.
   for (const [token, count] of leftBag) {
     const r = rightBag.get(token) ?? 0;
     for (let i = 0; i < count - r; i++) {
@@ -415,6 +351,7 @@ function diffNegations(left: NormToken[], right: NormToken[]): Finding[] {
     }
   }
 
+  // Sentence-level polarity (catches not-present ΓåÆ absent)
   if (findings.length === 0 && polarityCount(left) !== polarityCount(right)) {
     findings.push({
       direction: polarityCount(left) > polarityCount(right) ? 'dropped' : 'inserted',
@@ -426,8 +363,8 @@ function diffNegations(left: NormToken[], right: NormToken[]): Finding[] {
   return findings;
 }
 
-function negationBag(tokens: NormToken[]): Map<string, number> {
-  const m = new Map<string, number>();
+function negationBag(tokens) {
+  const m = new Map();
   for (const t of flatten(tokens)) {
     if (t === "n't" || NEGATIONS.has(t)) {
       const key = t === "n't" ? 'not' : t;
@@ -437,8 +374,8 @@ function negationBag(tokens: NormToken[]): Map<string, number> {
   return m;
 }
 
-function diffNumbers(left: NormToken[], right: NormToken[]): Finding[] {
-  const findings: Finding[] = [];
+function diffNumbers(left, right) {
+  const findings = [];
   const l = numberBag(left);
   const r = numberBag(right);
 
@@ -457,14 +394,16 @@ function diffNumbers(left: NormToken[], right: NormToken[]): Finding[] {
   return findings;
 }
 
-function numberBag(tokens: NormToken[]): Map<string, number> {
-  const m = new Map<string, number>();
+function numberBag(tokens) {
+  const m = new Map();
+  // Compose simple "fifteen thousand" style if still present as separate num tokens
   const flat = flatten(tokens);
-  const values: string[] = [];
+  const values = [];
   for (let i = 0; i < flat.length; i++) {
     const t = flat[i];
     if (!String(t).startsWith('num:')) continue;
     let v = Number(String(t).slice(4));
+    // If next is thousand/million already normalized to num:1000, multiply
     if (i + 1 < flat.length && String(flat[i + 1]).startsWith('num:')) {
       const next = Number(String(flat[i + 1]).slice(4));
       if (next === 1000 || next === 1_000_000 || next === 1_000_000_000) {
@@ -480,8 +419,8 @@ function numberBag(tokens: NormToken[]): Map<string, number> {
   return m;
 }
 
-function diffEntities(left: NormToken[], right: NormToken[]): Finding[] {
-  const findings: Finding[] = [];
+function diffEntities(left, right) {
+  const findings = [];
   const leftSet = new Set(flatten(left).filter((t) => !String(t).startsWith('num:')));
   const rightTokens = flatten(right).filter((t) => !String(t).startsWith('num:'));
 
@@ -492,12 +431,13 @@ function diffEntities(left: NormToken[], right: NormToken[]): Finding[] {
     if (NEGATIONS.has(t)) continue;
     if (NEGATIVE_PREDICATES.has(t)) continue;
     if (UNIT_ALIASES.has(t)) continue;
+    // content word only in rewrite ΓåÆ inserted entity / content
     findings.push({ direction: 'inserted', kind: 'entity', token: t });
   }
   return findings;
 }
 
-function verdictLevel(findings: Finding[]): VerdictLevel {
+function verdictLevel(findings) {
   if (findings.some((f) => f.kind === 'negation' || f.kind === 'number')) {
     return 'high';
   }
@@ -528,3 +468,49 @@ function verdictLevel(findings: Finding[]): VerdictLevel {
  * - Discourse "no" inside a self-correction ("Tuesday - no, Wednesday") can
  *   flag a dropped negation when the final intent is unchanged (corpus clip-16).
  */
+
+/** STT confidence below this -> treat dropped token as likely mishearing (R9). */
+export const WORD_CONFIDENCE_THRESHOLD = 0.5;
+
+/**
+ * For each dropped finding, attach a cause from per-word STT confidence.
+ * Does not change verdict severity (R9).
+ */
+export function annotateFindings(findings, words) {
+  if (!findings.length) return [];
+  if (!words || !words.length) {
+    return findings.map((f) =>
+      f.direction === "dropped"
+        ? { ...f, cause: "unknown", word_confidence: null }
+        : { ...f },
+    );
+  }
+
+  const pool = words.map((w) => ({
+    key: normalizeWordKey(w.text),
+    confidence: Number(w.confidence),
+    used: false,
+  }));
+
+  return findings.map((f) => {
+    if (f.direction !== "dropped" || !f.token || f.token.startsWith("[")) {
+      return { ...f };
+    }
+    const key = normalizeWordKey(f.token);
+    const hit = pool.find((row) => !row.used && row.key === key);
+    if (!hit || Number.isNaN(hit.confidence)) {
+      return { ...f, cause: "unknown", word_confidence: null };
+    }
+    hit.used = true;
+    const cause = hit.confidence < WORD_CONFIDENCE_THRESHOLD ? "mishearing" : "rewrite";
+    return { ...f, cause, word_confidence: hit.confidence };
+  });
+}
+
+function normalizeWordKey(text) {
+  return String(text)
+    .toLowerCase()
+    .replace(/[^\w']/g, "")
+    .replace(/^'+|'+$/g, "");
+}
+
