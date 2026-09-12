@@ -1,0 +1,19 @@
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Source recordings (converted WAVs are the fixtures)
+fixtures/*.mp3
+fixtures/_ffmpeg.log
+fixtures/clip-temp.wav
+
+# Optional local noise
+*.log
+node_modules/

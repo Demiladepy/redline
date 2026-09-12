@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Redline — see when cleanup changes meaning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/site.css" />
+  <style>
+    body {
+      background:
+        radial-gradient(900px 480px at 70% -5%, #d7e4ff 0%, transparent 55%),
+        linear-gradient(180deg, #eef1f5 0%, var(--bg) 42%, #fff 100%);
+      overflow-x: hidden;
+    }
+
+    .top {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+    .nav a {
+      text-decoration: none;
+    }
+    .nav a:hover { color: var(--ink); }
+
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 3rem;
+      align-items: center;
+      min-height: calc(100vh - 5rem);
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding-top: 1.5rem;
+      }
+      .nav { display: none; }
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--blue);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(2.6rem, 6vw, 4.4rem);
+      letter-spacing: -0.055em;
+      line-height: 0.98;
+      margin: 0 0 1.1rem;
+      max-width: 11ch;
+    }
+
+    .hero .lede {
+      margin: 0 0 1.75rem;
+      color: var(--muted);
+      font-size: 1.15rem;
+      max-width: 34rem;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .cta-row a.btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 0.8rem 1.35rem;
+      border: 1px solid var(--ink);
+      background: var(--bg-elev);
+      font-weight: 600;
+    }
+    .cta-row a.btn.primary {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .cta-row a.btn.primary:hover {
+      background: var(--blue-deep);
+      border-color: var(--blue-deep);
+    }
+
+    .stage {
+      position: relative;
+      border-radius: 28px;
+      background:
+        linear-gradient(160deg, #fff 0%, #f7f9fc 100%);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      animation: rise 0.8s ease both;
+    }
+
+    .stage::before {
+      content: "";
+      position: absolute;
+      inset: auto -8% -12% 18%;
+      height: 55%;
+      background: radial-gradient(ellipse at center, rgba(0, 85, 255, 0.18), transparent 70%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .stage-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 0.85rem;
+    }
+
+    .compare {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .strip {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1rem 1.1rem;
+      background: #fff;
+    }
+
+    .strip strong {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+      font-weight: 600;
+    }
+
+    .strip p {
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1.45;
+    }
+
+    .strip.dirty {
+      border-color: #f3b4b0;
+      background: linear-gradient(180deg, #fff 60%, var(--high-bg));
+    }
+
+    .strike {
+      text-decoration: line-through;
+      color: var(--high);
+      background: var(--high-bg);
+      padding: 0 0.15em;
+      border-radius: 3px;
+    }
+
+    .flag {
+      margin-top: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 0.8rem;
+      border-radius: 999px;
+      background: var(--high-bg);
+      color: var(--high);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .pulse-dot {
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background: var(--high);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+
+    .below {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+    }
+
+    .below h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.1rem);
+      letter-spacing: -0.04em;
+      margin: 0 0 0.6rem;
+    }
+
+    .below > p {
+      color: var(--muted);
+      max-width: 40rem;
+      margin: 0 0 1.75rem;
+    }
+
+    .points {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 800px) {
+      .points { grid-template-columns: 1fr; }
+    }
+
+    .point h3 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      letter-spacing: -0.03em;
+      margin: 0 0 0.4rem;
+    }
+
+    .point p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .point-num {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--blue);
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.55rem;
+    }
+
+    footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--line);
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+
+    .hero-copy {
+      animation: rise 0.7s ease both;
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">
+      <img src="/logo.png" alt="" width="32" height="32" />
+      <span>Redline</span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#how">How it works</a>
+      <a href="/app.html">Open dictation</a>
+    </nav>
+    <a class="btn primary" href="/app.html" style="display:inline-flex;text-decoration:none;border-radius:999px;padding:0.7rem 1.15rem;background:var(--blue);border:1px solid var(--blue);color:#fff;font-weight:600;">Open app</a>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">Dictation audit</div>
+      <h1>Redline</h1>
+      <p class="lede">
+        The cleanup can change what you said, and this shows you when it does.
+        Verbatim on one side. Rewrite on the other. Drift marked in place.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="/app.html">Start dictating</a>
+        <a class="btn" href="/app.html?sample=1">See the sample case</a>
+      </div>
+    </div>
+
+    <div class="stage" aria-hidden="true">
+      <div class="stage-label">What the API returns</div>
+      <div class="compare">
+        <div class="strip">
+          <strong>Verbatim</strong>
+          <p>Patient is <b>not</b> allergic to penicillin…</p>
+        </div>
+        <div class="strip dirty">
+          <strong>Rewrite · HTTP 200 · llm_error null</strong>
+          <p>Patient is allergic to penicillin…</p>
+        </div>
+      </div>
+      <div class="flag"><span class="pulse-dot"></span> High · dropped negation</div>
+    </div>
+  </section>
+
+  <section class="below" id="how">
+    <h2>How it works</h2>
+    <p>
+      AssemblyAI Dictation returns both the verbatim transcript and an LLM rewrite.
+      Redline aligns them with a deterministic checker — no second model grading the first.
+    </p>
+    <div class="points">
+      <div class="point">
+        <div class="point-num">01</div>
+        <h3>Speak</h3>
+        <p>Record from the browser as 16-bit PCM. Space starts and stops when the app has focus.</p>
+      </div>
+      <div class="point">
+        <div class="point-num">02</div>
+        <h3>Compare</h3>
+        <p>Negations, numbers, and invented names are checked against the verbatim string.</p>
+      </div>
+      <div class="point">
+        <div class="point-num">03</div>
+        <h3>Copy with a guard</h3>
+        <p>High-severity findings require a second confirm before the rewrite hits the clipboard.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Redline · AssemblyAI Dictation API · see RESULTS.md for the corpus
+  </footer>
+</body>
+</html>

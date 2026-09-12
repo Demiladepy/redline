@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Redline — dictation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/site.css" />
+  <style>
+    body {
+      background:
+        radial-gradient(700px 360px at 100% 0%, #dbe6ff 0%, transparent 50%),
+        var(--bg);
+    }
+
+    .shell {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem 3rem;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.5rem 0 1.25rem;
+    }
+
+    .top-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+    .top-links a { text-decoration: none; }
+    .top-links a:hover { color: var(--ink); }
+
+    .workspace {
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 1.35rem 1.35rem 1.5rem;
+    }
+
+    .workspace h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2rem);
+      letter-spacing: -0.045em;
+      margin: 0 0 0.35rem;
+    }
+
+    .workspace .lede {
+      margin: 0 0 1.25rem;
+      color: var(--muted);
+      max-width: 40rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+      margin-bottom: 1.15rem;
+    }
+
+    #recordBtn.recording {
+      background: var(--high);
+      border-color: var(--high);
+      color: #fff;
+      animation: rec-pulse 1.2s ease-in-out infinite;
+    }
+
+    .hint { color: var(--muted); font-size: 0.9rem; }
+
+    .error {
+      display: none;
+      margin: 0 0 1rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid #f0a8a4;
+      background: var(--high-bg);
+      color: var(--high);
+      border-radius: var(--radius);
+    }
+    .error.show { display: block; }
+
+    .panes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+    @media (max-width: 760px) {
+      .panes { grid-template-columns: 1fr; }
+    }
+
+    .pane {
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+      border-radius: 16px;
+      padding: 1rem 1.05rem;
+      min-height: 13rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .pane h2 {
+      margin: 0 0 0.55rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 600;
+      font-family: var(--font-body);
+    }
+    .text {
+      white-space: pre-wrap;
+      line-height: 1.55;
+      font-size: 1.05rem;
+      flex: 1;
+    }
+    mark.high { background: var(--high-bg); color: var(--high); padding: 0 0.15em; border-radius: 3px; }
+    mark.medium { background: var(--med-bg); color: var(--med); padding: 0 0.15em; border-radius: 3px; }
+
+    .copy-row { margin-top: 0.9rem; }
+    #copyBtn {
+      border-radius: 10px;
+      width: 100%;
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+    #copyBtn.warn {
+      border-color: var(--high);
+      color: var(--high);
+      background: var(--high-bg);
+    }
+
+    .verdict {
+      margin-top: 0.9rem;
+      padding: 0.8rem 0.95rem;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .verdict.clean, .verdict.none { background: var(--ok-bg); color: var(--ok); }
+    .verdict.medium { background: var(--med-bg); color: var(--med); }
+    .verdict.high { background: var(--high-bg); color: var(--high); }
+
+    .meta {
+      margin-top: 0.75rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @keyframes rec-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(192, 21, 16, 0.35); }
+      50% { box-shadow: 0 0 0 8px rgba(192, 21, 16, 0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <a class="brand" href="/">
+        <img src="/logo.png" alt="" width="32" height="32" />
+        <span>Redline</span>
+      </a>
+      <div class="top-links">
+        <a href="/">Home</a>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <h1>Dictation</h1>
+      <p class="lede">
+        Record what you mean. We show the verbatim, the cleanup, and every span that does not trace back.
+      </p>
+
+      <div class="controls">
+        <button type="button" class="primary" id="recordBtn">Record</button>
+        <button type="button" id="sampleBtn">Run sample case</button>
+        <span class="hint" id="spaceHint">Space to record</span>
+      </div>
+
+      <div class="error" id="error" role="alert"></div>
+
+      <div class="panes">
+        <section class="pane">
+          <h2>Verbatim</h2>
+          <div class="text" id="verbatim"></div>
+        </section>
+        <section class="pane">
+          <h2>Rewrite</h2>
+          <div class="text" id="rewrite"></div>
+          <div class="copy-row">
+            <button type="button" id="copyBtn" hidden>Copy rewrite</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="verdict" id="verdict" hidden></div>
+      <div class="meta" id="meta"></div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { ground } from '/ground.js';
+
+    const recordBtn = document.getElementById('recordBtn');
+    const sampleBtn = document.getElementById('sampleBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const errorEl = document.getElementById('error');
+    const verbatimEl = document.getElementById('verbatim');
+    const rewriteEl = document.getElementById('rewrite');
+    const verdictEl = document.getElementById('verdict');
+    const metaEl = document.getElementById('meta');
+
+    let recording = false;
+    let audioCtx = null;
+    let workletNode = null;
+    let mediaStream = null;
+    let pcmChunks = [];
+    let lastRewriteText = '';
+    let highFindingCount = 0;
+    let copyArmed = false;
+    let copiedTimer = null;
+
+    const SAMPLE = {
+      text: 'Patient is, uh, not allergic to penicillin, so give her twenty milligrams, um, twice daily.',
+      llm_response: 'Patient is allergic to penicillin, so give her 20 mg twice daily.',
+      llm_error: null,
+      confidence: 0.91,
+      request_time_ms: 812,
+      audio_duration_ms: 6400,
+    };
+
+    sampleBtn.addEventListener('click', () => {
+      const checked = ground(SAMPLE.text, SAMPLE.llm_response);
+      render({ ...SAMPLE, verdict: checked.verdict, findings: checked.findings });
+    });
+
+    if (new URLSearchParams(location.search).get('sample') === '1') {
+      sampleBtn.click();
+    }
+
+    recordBtn.addEventListener('click', () => {
+      if (recording) stopRecording();
+      else startRecording();
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!lastRewriteText) return;
+      if (highFindingCount > 0 && !copyArmed) {
+        copyArmed = true;
+        const n = highFindingCount;
+        const noun = n === 1 ? 'change' : 'changes';
+        copyBtn.textContent = `Copy anyway — ${n} ${noun} can alter meaning`;
+        copyBtn.classList.add('warn');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(lastRewriteText);
+        resetCopyLabel('Copied');
+        if (copiedTimer) clearTimeout(copiedTimer);
+        copiedTimer = setTimeout(() => resetCopyLabel(), 2000);
+        copyArmed = false;
+        copyBtn.classList.remove('warn');
+      } catch (err) {
+        showError('Could not copy to clipboard.', String(err && err.message ? err.message : err));
+      }
+    });
+
+    copyBtn.addEventListener('blur', () => {
+      if (copyArmed) {
+        copyArmed = false;
+        copyBtn.classList.remove('warn');
+        resetCopyLabel();
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space') return;
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
+      if (document.activeElement === copyBtn) return;
+      e.preventDefault();
+      if (recording) stopRecording();
+      else startRecording();
+    });
+
+    function resetCopyLabel(label = 'Copy rewrite') {
+      copyBtn.textContent = label;
+      if (label === 'Copy rewrite') copyBtn.classList.remove('warn');
+    }
+
+    async function startRecording() {
+      clearError();
+      pcmChunks = [];
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioCtx = new AudioContext({ sampleRate: 48000 });
+      await audioCtx.audioWorklet.addModule('/pcm-processor.js');
+      const source = audioCtx.createMediaStreamSource(mediaStream);
+      workletNode = new AudioWorkletNode(audioCtx, 'pcm-processor');
+      workletNode.port.onmessage = (ev) => {
+        pcmChunks.push(new Int16Array(ev.data));
+      };
+      source.connect(workletNode);
+      recording = true;
+      recordBtn.textContent = 'Stop';
+      recordBtn.classList.add('recording');
+    }
+
+    async function stopRecording() {
+      recording = false;
+      recordBtn.textContent = 'Record';
+      recordBtn.classList.remove('recording');
+      recordBtn.disabled = true;
+
+      if (workletNode) workletNode.disconnect();
+      if (audioCtx) await audioCtx.close();
+      if (mediaStream) mediaStream.getTracks().forEach((t) => t.stop());
+      workletNode = null;
+      audioCtx = null;
+      mediaStream = null;
+
+      try {
+        const wav = encodeWav(downsampleTo16k(pcmChunks, 48000), 16000);
+        const t0 = performance.now();
+        const res = await fetch('/api/transcribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: wav,
+        });
+        const data = await res.json();
+        const roundTrip = Math.round(performance.now() - t0);
+        if (!res.ok) {
+          showError(data.error || 'Request failed', data.hint || '');
+          return;
+        }
+        render(data, roundTrip);
+      } catch (err) {
+        showError('Could not reach the server.', String(err && err.message ? err.message : err));
+      } finally {
+        recordBtn.disabled = false;
+      }
+    }
+
+    function downsampleTo16k(chunks, inputRate) {
+      const total = chunks.reduce((n, c) => n + c.length, 0);
+      const merged = new Int16Array(total);
+      let offset = 0;
+      for (const c of chunks) {
+        merged.set(c, offset);
+        offset += c.length;
+      }
+      if (inputRate === 16000) return merged;
+      const ratio = inputRate / 16000;
+      const outLength = Math.floor(merged.length / ratio);
+      const out = new Int16Array(outLength);
+      for (let i = 0; i < outLength; i++) {
+        out[i] = merged[Math.floor(i * ratio)];
+      }
+      return out;
+    }
+
+    function encodeWav(samples, sampleRate) {
+      const buffer = new ArrayBuffer(44 + samples.length * 2);
+      const view = new DataView(buffer);
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + samples.length * 2, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, samples.length * 2, true);
+      let o = 44;
+      for (let i = 0; i < samples.length; i++, o += 2) {
+        view.setInt16(o, samples[i], true);
+      }
+      return buffer;
+    }
+
+    function writeString(view, offset, str) {
+      for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    }
+
+    function showError(message, hint) {
+      errorEl.textContent = hint ? `${message} ${hint}` : message;
+      errorEl.classList.add('show');
+    }
+    function clearError() {
+      errorEl.textContent = '';
+      errorEl.classList.remove('show');
+    }
+
+    function render(data, roundTripMs) {
+      clearError();
+      const text = data.text ?? '';
+      let rewrite = data.llm_response;
+      let findings = data.findings;
+      let verdict = data.verdict;
+
+      if (rewrite == null) {
+        rewrite = text;
+        verdict = { level: 'none' };
+        findings = [];
+        verdictEl.hidden = false;
+        verdictEl.className = 'verdict none';
+        verdictEl.textContent = 'No rewrite came back. This is exactly what you said.';
+      } else {
+        if (!verdict || !findings) {
+          const checked = ground(text, rewrite);
+          verdict = checked.verdict;
+          findings = checked.findings;
+        }
+        verdictEl.hidden = false;
+        verdictEl.className = `verdict ${verdict.level}`;
+        if (verdict.level === 'clean') {
+          verdictEl.textContent = 'Clean. The rewrite does not look like it changed the meaning.';
+        } else if (verdict.level === 'none') {
+          verdictEl.textContent = 'No rewrite came back. This is exactly what you said.';
+        } else {
+          verdictEl.textContent = `${verdict.level} severity — ${findings.length} finding(s).`;
+        }
+      }
+
+      verbatimEl.textContent = text;
+      rewriteEl.innerHTML = highlight(rewrite, findings);
+
+      lastRewriteText = rewrite ?? '';
+      highFindingCount = (findings || []).filter(
+        (f) => f.kind === 'negation' || f.kind === 'number',
+      ).length;
+      if (verdict && verdict.level === 'high' && highFindingCount === 0) {
+        highFindingCount = (findings || []).length;
+      }
+      copyArmed = false;
+      if (copiedTimer) clearTimeout(copiedTimer);
+      copyBtn.hidden = !lastRewriteText;
+      resetCopyLabel();
+
+      const bits = [];
+      if (data.confidence != null) bits.push(`confidence ${Number(data.confidence).toFixed(2)}`);
+      if (data.request_time_ms != null) bits.push(`upstream ${Math.round(data.request_time_ms)} ms`);
+      if (roundTripMs != null) bits.push(`round-trip ${roundTripMs} ms`);
+      if (data.audio_duration_ms != null) bits.push(`audio ${data.audio_duration_ms} ms`);
+      if (data.llm_error) bits.push(`llm_error ${data.llm_error}`);
+      metaEl.textContent = bits.join(' · ');
+    }
+
+    function highlight(text, findings) {
+      if (!findings || !findings.length) return escapeHtml(text);
+      let html = escapeHtml(text);
+      const inserted = findings.filter((f) => f.direction === 'inserted');
+      for (const f of inserted) {
+        if (!f.token || f.token.startsWith('[')) continue;
+        const re = new RegExp(`\\b(${escapeRegExp(f.token)})\\b`, 'ig');
+        const cls = f.kind === 'entity' ? 'medium' : 'high';
+        html = html.replace(re, `<mark class="${cls}">$1</mark>`);
+      }
+      return html;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+    function escapeRegExp(s) {
+      return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    window.render = render;
+    window.__sample = SAMPLE;
+  </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+/* Shared Redline tokens — landing + app */
+:root {
+  --bg: #f4f6f8;
+  --bg-elev: #ffffff;
+  --ink: #0b0d10;
+  --muted: #5b6572;
+  --line: #d8dee6;
+  --blue: #0055ff;
+  --blue-deep: #0040c4;
+  --blue-soft: #e8efff;
+  --high: #c01510;
+  --high-bg: #fdeceb;
+  --med: #a34b00;
+  --med-bg: #fff4e5;
+  --ok: #0b6b3a;
+  --ok-bg: #e8f7ef;
+  --shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  --font-display: "Syne", "Instrument Sans", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "DM Sans", system-ui, sans-serif;
+  --radius: 12px;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+img { display: block; max-width: 100%; }
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+  border: 1px solid var(--ink);
+  background: var(--bg-elev);
+  color: var(--ink);
+  padding: 0.75rem 1.25rem;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+button.primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+button.primary:hover { background: var(--blue-deep); border-color: var(--blue-deep); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-size: 1.35rem;
+}
+
+.brand img {
+  width: 2rem;
+  height: 2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
