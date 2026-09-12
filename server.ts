@@ -2,7 +2,8 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ground } from './ground.js';
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { ground } from './ground.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, 'public');
@@ -11,9 +12,9 @@ const UPSTREAM = 'https://dictation.assemblyai.com/v1/transcribe/live';
 
 loadEnvFile(path.join(__dirname, '.env'));
 
-const API_KEY = process.env.AAI_API_KEY;
+type ErrorBody = { error: string; hint: string };
 
-const MIME = {
+const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -30,16 +31,20 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && req.url === '/api/transcribe') {
       return await transcribe(req, res);
     }
+    if (req.method === 'POST' && req.url === '/api/check') {
+      return await check(req, res);
+    }
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Not found', hint: 'POST /api/transcribe or GET /' }));
   } catch (err) {
-    console.error('server error:', err && err.message ? err.message : err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('server error:', message);
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Internal server error', hint: 'See server logs.' }));
   }
 });
 
-function loadEnvFile(filePath) {
+function loadEnvFile(filePath: string): void {
   if (process.env.AAI_API_KEY) return;
   if (!fs.existsSync(filePath)) return;
   const text = fs.readFileSync(filePath, 'utf8');
@@ -53,18 +58,9 @@ function loadEnvFile(filePath) {
   }
 }
 
-function serveStatic(req, res) {
-  let urlPath = req.url === '/' ? '/index.html' : req.url.split('?')[0];
+function serveStatic(req: IncomingMessage, res: ServerResponse): void {
+  let urlPath = req.url === '/' ? '/index.html' : (req.url ?? '/').split('?')[0];
   urlPath = decodeURIComponent(urlPath);
-
-  // Browser needs the verifier module; serve it from the project root.
-  if (urlPath === '/ground.js') {
-    const groundPath = path.join(__dirname, 'ground.js');
-    res.writeHead(200, { 'Content-Type': MIME['.js'] });
-    if (req.method === 'HEAD') return res.end();
-    fs.createReadStream(groundPath).pipe(res);
-    return;
-  }
 
   const filePath = path.normalize(path.join(PUBLIC, urlPath));
   if (!filePath.startsWith(PUBLIC)) {
@@ -77,18 +73,38 @@ function serveStatic(req, res) {
   }
   const ext = path.extname(filePath);
   res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
-  if (req.method === 'HEAD') return res.end();
+  if (req.method === 'HEAD') {
+    res.end();
+    return;
+  }
   fs.createReadStream(filePath).pipe(res);
 }
 
-async function readBody(req) {
-  const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
+async function readBody(req: IncomingMessage): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
   return Buffer.concat(chunks);
 }
 
-async function transcribe(req, res) {
-  if (!API_KEY && !process.env.AAI_API_KEY) {
+async function check(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const raw = await readBody(req);
+  let body: { text?: string; llm_response?: string | null };
+  try {
+    body = JSON.parse(raw.toString('utf8')) as { text?: string; llm_response?: string | null };
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid JSON', hint: 'Send { text, llm_response }.' }));
+    return;
+  }
+  const result = ground(body.text ?? '', body.llm_response);
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(result));
+}
+
+async function transcribe(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  if (!process.env.AAI_API_KEY) {
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(
       JSON.stringify({
@@ -131,16 +147,14 @@ async function transcribe(req, res) {
   if (!upstream.ok) {
     console.error('upstream status', upstream.status, 'body length', rawText.length);
     const mapped = mapUpstreamError(upstream.status);
-    res.writeHead(upstream.status, {
-      'Content-Type': 'application/json',
-    });
+    res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(mapped));
     return;
   }
 
-  let data;
+  let data: Record<string, unknown>;
   try {
-    data = JSON.parse(rawText);
+    data = JSON.parse(rawText) as Record<string, unknown>;
   } catch {
     console.error('upstream non-JSON body', rawText.slice(0, 200));
     res.writeHead(502, { 'Content-Type': 'application/json' });
@@ -153,13 +167,24 @@ async function transcribe(req, res) {
     return;
   }
 
-  const verdict = ground(data.text ?? '', data.llm_response);
+  const text = typeof data.text === 'string' ? data.text : '';
+  const llmResponse =
+    data.llm_response === null || typeof data.llm_response === 'string'
+      ? (data.llm_response as string | null)
+      : null;
+  const checked = ground(text, llmResponse);
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ ...data, verdict: verdict.verdict, findings: verdict.findings }));
+  res.end(
+    JSON.stringify({
+      ...data,
+      verdict: checked.verdict,
+      findings: checked.findings,
+    }),
+  );
 }
 
-function mapUpstreamError(status) {
-  const table = {
+function mapUpstreamError(status: number): ErrorBody {
+  const table: Record<number, ErrorBody> = {
     400: {
       error: 'The request was malformed — config must precede audio.',
       hint: 'Check multipart part order.',

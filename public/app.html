@@ -204,8 +204,6 @@
   </div>
 
   <script type="module">
-    import { ground } from '/ground.js';
-
     const recordBtn = document.getElementById('recordBtn');
     const sampleBtn = document.getElementById('sampleBtn');
     const copyBtn = document.getElementById('copyBtn');
@@ -234,9 +232,24 @@
       audio_duration_ms: 6400,
     };
 
-    sampleBtn.addEventListener('click', () => {
-      const checked = ground(SAMPLE.text, SAMPLE.llm_response);
-      render({ ...SAMPLE, verdict: checked.verdict, findings: checked.findings });
+    async function runCheck(text, llm_response) {
+      const res = await fetch('/api/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, llm_response }),
+      });
+      if (!res.ok) throw new Error('check failed');
+      return res.json();
+    }
+
+    sampleBtn.addEventListener('click', async () => {
+      try {
+        clearError();
+        const checked = await runCheck(SAMPLE.text, SAMPLE.llm_response);
+        render({ ...SAMPLE, verdict: checked.verdict, findings: checked.findings });
+      } catch (err) {
+        showError('Could not run sample check.', String(err && err.message ? err.message : err));
+      }
     });
 
     if (new URLSearchParams(location.search).get('sample') === '1') {
@@ -398,7 +411,7 @@
       errorEl.classList.remove('show');
     }
 
-    function render(data, roundTripMs) {
+    async function render(data, roundTripMs) {
       clearError();
       const text = data.text ?? '';
       let rewrite = data.llm_response;
@@ -414,7 +427,7 @@
         verdictEl.textContent = 'No rewrite came back. This is exactly what you said.';
       } else {
         if (!verdict || !findings) {
-          const checked = ground(text, rewrite);
+          const checked = await runCheck(text, rewrite);
           verdict = checked.verdict;
           findings = checked.findings;
         }

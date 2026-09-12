@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=22.6"
   },
   "scripts": {
-    "start": "node server.js",
-    "test": "node --test test/"
+    "start": "node --experimental-strip-types server.ts",
+    "test": "node --experimental-strip-types --test test/ground.test.ts",
+    "corpus": "node --experimental-strip-types scripts/run-corpus.ts"
   }
 }

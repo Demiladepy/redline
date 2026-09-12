@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ground } from '../ground.js';
+import { ground } from '../ground.ts';
 
 describe('ground', () => {
   it('negation dropped', () => {

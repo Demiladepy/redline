@@ -6,13 +6,26 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ground } from '../ground.js';
+import { ground, type Finding } from '../ground.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const FIXTURES = path.join(ROOT, 'fixtures');
 const OUT = path.join(ROOT, 'corpus-results.json');
 const UPSTREAM = 'https://dictation.assemblyai.com/v1/transcribe/live';
+
+type CorpusEntry = {
+  file: string;
+  text?: string | null;
+  llm_response?: string | null;
+  llm_error?: string | null;
+  confidence?: number | null;
+  request_time_ms?: number | null;
+  verdict: string | null;
+  findings: Finding[];
+  error?: string;
+  status?: number;
+};
 
 loadEnvFile(path.join(ROOT, '.env'));
 const API_KEY = process.env.AAI_API_KEY;
@@ -25,8 +38,8 @@ const files = fs
   .readdirSync(FIXTURES)
   .filter((f) => /^clip-\d+\.wav$/i.test(f))
   .sort((a, b) => {
-    const na = Number(a.match(/(\d+)/)[1]);
-    const nb = Number(b.match(/(\d+)/)[1]);
+    const na = Number(a.match(/(\d+)/)?.[1] ?? 0);
+    const nb = Number(b.match(/(\d+)/)?.[1] ?? 0);
     return na - nb;
   });
 
@@ -35,7 +48,7 @@ if (!files.length) {
   process.exit(1);
 }
 
-const results = [];
+const results: CorpusEntry[] = [];
 for (let i = 0; i < files.length; i++) {
   const file = files[i];
   const entry = await transcribeOne(file);
@@ -49,7 +62,7 @@ for (let i = 0; i < files.length; i++) {
 fs.writeFileSync(OUT, JSON.stringify(results, null, 2) + '\n');
 console.log(`Wrote ${OUT} (${results.length} clips)`);
 
-async function transcribeOne(file) {
+async function transcribeOne(file: string): Promise<CorpusEntry> {
   const audioPath = path.join(FIXTURES, file);
   const audio = fs.readFileSync(audioPath);
 
@@ -66,7 +79,7 @@ async function transcribeOne(file) {
 
       const res = await fetch(UPSTREAM, {
         method: 'POST',
-        headers: { Authorization: API_KEY },
+        headers: { Authorization: API_KEY as string },
         body: form,
         signal: AbortSignal.timeout(90_000),
       });
@@ -98,7 +111,13 @@ async function transcribeOne(file) {
         };
       }
 
-      const data = JSON.parse(raw);
+      const data = JSON.parse(raw) as {
+        text?: string;
+        llm_response?: string | null;
+        llm_error?: string | null;
+        confidence?: number;
+        request_time_ms?: number;
+      };
       const checked = ground(data.text ?? '', data.llm_response);
       return {
         file,
@@ -111,21 +130,23 @@ async function transcribeOne(file) {
         findings: checked.findings,
       };
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       return {
         file,
-        error: String(err && err.message ? err.message : err),
+        error: message,
         verdict: null,
         findings: [],
       };
     }
   }
+  return { file, error: 'exhausted_retries', verdict: null, findings: [] };
 }
 
-function sleep(ms) {
+function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function loadEnvFile(filePath) {
+function loadEnvFile(filePath: string): void {
   if (process.env.AAI_API_KEY) return;
   if (!fs.existsSync(filePath)) return;
   const text = fs.readFileSync(filePath, 'utf8');

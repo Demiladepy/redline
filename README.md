@@ -26,7 +26,7 @@ Known false positives (also listed at the bottom of `ground.js`): contraction no
 
 ## Run it
 
-Node 18+. Zero npm dependencies.
+Node 22.6+ (uses `--experimental-strip-types`). Zero npm dependencies.
 
 ```powershell
 # from the project root
@@ -35,7 +35,7 @@ Get-Content .env | ForEach-Object {
     $env:AAI_API_KEY = $matches[1].Trim().Trim('"').Trim("'")
   }
 }
-node server.js
+npm start
 ```
 
 Open http://localhost:8787 for the landing page, then **Start dictating** (or go to http://localhost:8787/app.html).
@@ -45,10 +45,10 @@ Open http://localhost:8787 for the landing page, then **Start dictating** (or go
 bash scripts/spike.sh
 
 # verifier tests
-node --test test/ground.test.js
+npm test
 
 # corpus (needs fixtures/clip-*.wav)
-node scripts/run-corpus.mjs
+npm run corpus
 ```
 
 ## Corpus headline

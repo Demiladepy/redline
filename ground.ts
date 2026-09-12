@@ -1,7 +1,25 @@
 /**
  * Deterministic meaning checker: align verbatim transcript vs LLM rewrite.
  * No model calls. Findings are the product.
+ * Erasable TypeScript only (Node --experimental-strip-types).
  */
+
+export type VerdictLevel = 'none' | 'clean' | 'medium' | 'high';
+export type FindingDirection = 'dropped' | 'inserted';
+export type FindingKind = 'negation' | 'number' | 'entity';
+
+export type Finding = {
+  direction: FindingDirection;
+  kind: FindingKind;
+  token: string;
+};
+
+export type GroundResult = {
+  verdict: { level: VerdictLevel };
+  findings: Finding[];
+};
+
+type NormToken = string | string[];
 
 const FILLERS = new Set([
   'uh',
@@ -24,7 +42,7 @@ const FILLERS = new Set([
   'huh',
 ]);
 
-const FILLER_PHRASES = [['you', 'know']];
+const FILLER_PHRASES: string[][] = [['you', 'know']];
 
 const NEGATIONS = new Set([
   'not',
@@ -78,7 +96,7 @@ const NEGATIVE_PREDICATES = new Set([
   'refused',
 ]);
 
-const UNIT_ALIASES = new Map([
+const UNIT_ALIASES = new Map<string, string>([
   ['mg', 'milligram'],
   ['milligrams', 'milligram'],
   ['milligram', 'milligram'],
@@ -94,7 +112,7 @@ const UNIT_ALIASES = new Map([
   ['µg', 'microgram'],
 ]);
 
-const NUMBER_WORDS = new Map([
+const NUMBER_WORDS = new Map<string, number>([
   ['zero', 0],
   ['oh', 0],
   ['one', 1],
@@ -218,12 +236,10 @@ const STOPWORDS = new Set([
   'scan',
 ]);
 
-/**
- * @param {string} verbatim
- * @param {string | null | undefined} rewrite
- * @returns {{ verdict: { level: string }, findings: Array<{ direction: string, kind: string, token: string }> }}
- */
-export function ground(verbatim, rewrite) {
+export function ground(
+  verbatim: string,
+  rewrite: string | null | undefined,
+): GroundResult {
   if (rewrite == null || rewrite === '') {
     return { verdict: { level: 'none' }, findings: [] };
   }
@@ -231,8 +247,7 @@ export function ground(verbatim, rewrite) {
   const left = prepare(String(verbatim ?? ''));
   const right = prepare(String(rewrite));
 
-  const findings = [];
-
+  const findings: Finding[] = [];
   findings.push(...diffNegations(left, right));
   findings.push(...diffNumbers(left, right));
   findings.push(...diffEntities(left, right));
@@ -241,14 +256,14 @@ export function ground(verbatim, rewrite) {
   return { verdict: { level }, findings };
 }
 
-function prepare(text) {
+function prepare(text: string): NormToken[] {
   const raw = tokenize(text);
   const collapsed = collapseStammers(raw);
   const withoutFillers = stripFillers(collapsed);
   return withoutFillers.map(normalizeToken);
 }
 
-function tokenize(text) {
+function tokenize(text: string): string[] {
   return text
     .toLowerCase()
     .replace(/(\d),(\d)/g, '$1$2')
@@ -258,8 +273,8 @@ function tokenize(text) {
     .filter(Boolean);
 }
 
-function collapseStammers(tokens) {
-  const out = [];
+function collapseStammers(tokens: string[]): string[] {
+  const out: string[] = [];
   for (const t of tokens) {
     if (out.length && out[out.length - 1] === t) continue;
     out.push(t);
@@ -267,8 +282,8 @@ function collapseStammers(tokens) {
   return out;
 }
 
-function stripFillers(tokens) {
-  const out = [];
+function stripFillers(tokens: string[]): string[] {
+  const out: string[] = [];
   for (let i = 0; i < tokens.length; i++) {
     let skippedPhrase = false;
     for (const phrase of FILLER_PHRASES) {
@@ -288,16 +303,12 @@ function stripFillers(tokens) {
   return out;
 }
 
-function normalizeToken(token) {
-  let t = token.toLowerCase();
-  if (t.endsWith("n't")) {
-    // keep as negation signal via split below
-  }
-  if (UNIT_ALIASES.has(t)) return UNIT_ALIASES.get(t);
+function normalizeToken(token: string): NormToken {
+  const t = token.toLowerCase();
+  if (UNIT_ALIASES.has(t)) return UNIT_ALIASES.get(t)!;
   if (NUMBER_WORDS.has(t)) return `num:${NUMBER_WORDS.get(t)}`;
   const compact = t.replace(/,/g, '');
   if (/^\d+(\.\d+)?$/.test(compact)) return `num:${Number(compact)}`;
-  // "20mg" style
   const glued = compact.match(/^(\d+(?:\.\d+)?)([a-zµ]+)$/);
   if (glued) {
     const unit = UNIT_ALIASES.get(glued[2]) ?? glued[2];
@@ -306,8 +317,8 @@ function normalizeToken(token) {
   return t;
 }
 
-function flatten(tokens) {
-  const out = [];
+function flatten(tokens: NormToken[]): string[] {
+  const out: string[] = [];
   for (const t of tokens) {
     if (Array.isArray(t)) out.push(...t);
     else out.push(t);
@@ -315,15 +326,7 @@ function flatten(tokens) {
   return out;
 }
 
-function bag(tokens) {
-  const m = new Map();
-  for (const t of flatten(tokens)) {
-    m.set(t, (m.get(t) ?? 0) + 1);
-  }
-  return m;
-}
-
-function polarityCount(tokens) {
+function polarityCount(tokens: NormToken[]): number {
   let n = 0;
   for (const t of flatten(tokens)) {
     if (t === "n't" || NEGATIONS.has(t)) n += 1;
@@ -332,12 +335,11 @@ function polarityCount(tokens) {
   return n;
 }
 
-function diffNegations(left, right) {
-  const findings = [];
+function diffNegations(left: NormToken[], right: NormToken[]): Finding[] {
+  const findings: Finding[] = [];
   const leftBag = negationBag(left);
   const rightBag = negationBag(right);
 
-  // Token-level not/never/etc.
   for (const [token, count] of leftBag) {
     const r = rightBag.get(token) ?? 0;
     for (let i = 0; i < count - r; i++) {
@@ -351,7 +353,6 @@ function diffNegations(left, right) {
     }
   }
 
-  // Sentence-level polarity (catches not-present → absent)
   if (findings.length === 0 && polarityCount(left) !== polarityCount(right)) {
     findings.push({
       direction: polarityCount(left) > polarityCount(right) ? 'dropped' : 'inserted',
@@ -363,8 +364,8 @@ function diffNegations(left, right) {
   return findings;
 }
 
-function negationBag(tokens) {
-  const m = new Map();
+function negationBag(tokens: NormToken[]): Map<string, number> {
+  const m = new Map<string, number>();
   for (const t of flatten(tokens)) {
     if (t === "n't" || NEGATIONS.has(t)) {
       const key = t === "n't" ? 'not' : t;
@@ -374,8 +375,8 @@ function negationBag(tokens) {
   return m;
 }
 
-function diffNumbers(left, right) {
-  const findings = [];
+function diffNumbers(left: NormToken[], right: NormToken[]): Finding[] {
+  const findings: Finding[] = [];
   const l = numberBag(left);
   const r = numberBag(right);
 
@@ -394,16 +395,14 @@ function diffNumbers(left, right) {
   return findings;
 }
 
-function numberBag(tokens) {
-  const m = new Map();
-  // Compose simple "fifteen thousand" style if still present as separate num tokens
+function numberBag(tokens: NormToken[]): Map<string, number> {
+  const m = new Map<string, number>();
   const flat = flatten(tokens);
-  const values = [];
+  const values: string[] = [];
   for (let i = 0; i < flat.length; i++) {
     const t = flat[i];
     if (!String(t).startsWith('num:')) continue;
     let v = Number(String(t).slice(4));
-    // If next is thousand/million already normalized to num:1000, multiply
     if (i + 1 < flat.length && String(flat[i + 1]).startsWith('num:')) {
       const next = Number(String(flat[i + 1]).slice(4));
       if (next === 1000 || next === 1_000_000 || next === 1_000_000_000) {
@@ -419,8 +418,8 @@ function numberBag(tokens) {
   return m;
 }
 
-function diffEntities(left, right) {
-  const findings = [];
+function diffEntities(left: NormToken[], right: NormToken[]): Finding[] {
+  const findings: Finding[] = [];
   const leftSet = new Set(flatten(left).filter((t) => !String(t).startsWith('num:')));
   const rightTokens = flatten(right).filter((t) => !String(t).startsWith('num:'));
 
@@ -431,13 +430,12 @@ function diffEntities(left, right) {
     if (NEGATIONS.has(t)) continue;
     if (NEGATIVE_PREDICATES.has(t)) continue;
     if (UNIT_ALIASES.has(t)) continue;
-    // content word only in rewrite → inserted entity / content
     findings.push({ direction: 'inserted', kind: 'entity', token: t });
   }
   return findings;
 }
 
-function verdictLevel(findings) {
+function verdictLevel(findings: Finding[]): VerdictLevel {
   if (findings.some((f) => f.kind === 'negation' || f.kind === 'number')) {
     return 'high';
   }
@@ -468,5 +466,3 @@ function verdictLevel(findings) {
  * - Discourse "no" inside a self-correction ("Tuesday - no, Wednesday") can
  *   flag a dropped negation when the final intent is unchanged (corpus clip-16).
  */
-
-
