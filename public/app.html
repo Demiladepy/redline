@@ -296,7 +296,7 @@
   </div>
 
   <script type="module">
-    import { ground, annotateFindings } from '/ground.js';
+    import { ground, annotateFindings, findingCategory } from '/ground.js';
 
     const recordBtn = document.getElementById('recordBtn');
     const sampleBtn = document.getElementById('sampleBtn');
@@ -325,6 +325,8 @@
     let copiedTimer = null;
 
     // R4: recorded offline response — no network when this button is used.
+    const MIN_AUDIO_MS = 80;
+
     const SAMPLE = {
       text: 'Patient is, uh, not allergic to penicillin, so give her twenty milligrams, um, twice daily.',
       llm_response: 'Patient is allergic to penicillin, so give her 20 mg twice daily.',
@@ -461,6 +463,7 @@
         recording = true;
         recordBtn.textContent = 'Stop';
         recordBtn.classList.add('recording');
+        fetch('/api/warm', { method: 'POST' }).catch(() => {});
       } catch (err) {
         if (mediaStream) mediaStream.getTracks().forEach((t) => t.stop());
         mediaStream = null;
@@ -482,20 +485,15 @@
       mediaStream = null;
 
       try {
-        const wav = encodeWav(downsampleTo16k(pcmChunks, 48000), 16000);
-        const t0 = performance.now();
-        const res = await fetch('/api/transcribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/octet-stream' },
-          body: wav,
-        });
-        const data = await res.json();
-        const roundTrip = Math.round(performance.now() - t0);
-        if (!res.ok) {
-          showError(data.error || 'Request failed', data.hint || '');
+        const samples = downsampleTo16k(pcmChunks, 48000);
+        const audioMs = Math.round((samples.length / 16000) * 1000);
+        if (audioMs < MIN_AUDIO_MS) {
           return;
         }
-        render(data, roundTrip);
+        const wav = encodeWav(samples, 16000);
+        const data = await transcribeWithRetry(wav);
+        if (data == null) return;
+        render(data.payload, data.roundTrip);
       } catch (err) {
         showError('Could not reach the server.', String(err && err.message ? err.message : err));
       } finally {
@@ -546,6 +544,36 @@
 
     function writeString(view, offset, str) {
       for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function transcribeWithRetry(wav, attempt = 0) {
+      const t0 = performance.now();
+      const res = await fetch('/api/transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: wav,
+      });
+      const data = await res.json();
+      const roundTrip = Math.round(performance.now() - t0);
+      if (res.ok) {
+        return { payload: data, roundTrip };
+      }
+      if (data.silent) {
+        return null;
+      }
+      const retryable = (res.status === 429 || res.status === 503) && attempt === 0;
+      if (retryable) {
+        const waitSec = Number(data.retry_after);
+        const delayMs = Number.isFinite(waitSec) && waitSec > 0 ? waitSec * 1000 : 2000;
+        await sleep(delayMs);
+        return transcribeWithRetry(wav, attempt + 1);
+      }
+      showError(data.error || 'Request failed', data.hint || '');
+      return null;
     }
 
     function showError(message, hint) {
@@ -647,10 +675,11 @@
       for (const f of findings) {
         const li = document.createElement('li');
         const sev = f.kind === 'entity' ? 'medium' : 'high';
+        const cat = findingCategory(f);
         let label =
           f.direction === 'dropped'
-            ? `Dropped ${f.kind}: “${f.token}” was in the verbatim and is missing from the rewrite.`
-            : `Inserted ${f.kind}: “${f.token}” appears in the rewrite and does not trace back to the verbatim.`;
+            ? `Dropped ${cat}: “${f.token}” was in the verbatim and is missing from the rewrite.`
+            : `Inserted ${cat}: “${f.token}” appears in the rewrite and does not trace back to the verbatim.`;
         if (f.direction === 'dropped' && f.cause === 'rewrite') {
           label += ` Cause: likely rewrite (STT confidence ${formatConf(f.word_confidence)} >= 0.5).`;
         } else if (f.direction === 'dropped' && f.cause === 'mishearing') {

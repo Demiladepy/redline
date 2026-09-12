@@ -9,6 +9,8 @@
   "scripts": {
     "start": "node --experimental-strip-types server.ts",
     "test": "node --experimental-strip-types --test test/ground.test.ts",
-    "corpus": "node --experimental-strip-types scripts/run-corpus.ts"
+    "corpus": "node --experimental-strip-types scripts/run-corpus.ts",
+    "measure-warm": "node --experimental-strip-types scripts/measure-warm.ts",
+    "keyterms-experiment": "node --experimental-strip-types scripts/keyterms-experiment.ts"
   }
 }

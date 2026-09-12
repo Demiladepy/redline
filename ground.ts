@@ -8,6 +8,13 @@ export type VerdictLevel = 'none' | 'clean' | 'medium' | 'high';
 export type FindingDirection = 'dropped' | 'inserted';
 export type FindingKind = 'negation' | 'number' | 'entity';
 
+/** S1 reporting vocabulary (display only; severity still uses FindingKind). */
+export type FindingCategory =
+  | 'negation'
+  | 'proper noun or name'
+  | 'alphanumeric string'
+  | 'domain terminology';
+
 export type Finding = {
   direction: FindingDirection;
   kind: FindingKind;
@@ -276,6 +283,19 @@ export function ground(
  * For each dropped finding, attach a cause from per-word STT confidence.
  * Does not change verdict severity (R9).
  */
+/** Map internal finding kind to AssemblyAI S1 reporting category. */
+export function findingCategory(f: Finding): FindingCategory {
+  if (f.kind === 'negation') return 'negation';
+  if (f.kind === 'number') return 'alphanumeric string';
+  const t = f.token.toLowerCase();
+  if (t.startsWith('[')) return 'domain terminology';
+  if (/\d/.test(t)) return 'alphanumeric string';
+  if (/-/.test(t) || /(?:osis|itis|ectomy|ology|emia|pathy|ware|base|sql)$/i.test(t)) {
+    return 'domain terminology';
+  }
+  return 'proper noun or name';
+}
+
 export function annotateFindings(
   findings: Finding[],
   words?: WordConfidence[] | null,

@@ -95,3 +95,29 @@ Checked the other clean-verdict clips in this 15-clip slice by hand against thei
 | clip-22 (`…haiku about coffee`) | Yes — rewrite identical |
 
 The fenced-data claim did **not** hold on all three clips. Three clips is not a proof either way; it is a measured counterexample on clip-21.
+
+---
+
+## Connection pre-warming (R11)
+
+Measured 2026-09-12 with `npm run measure-warm` on `fixtures/clip-01.wav` against `POST https://dictation.assemblyai.com/v1/transcribe/live`. Cold runs use a fresh Node process per request (full TLS each time). Warm runs call `GET https://dictation.assemblyai.com/v1/warm` in-process immediately before each transcribe. The app triggers warm via `POST /api/warm` when recording starts.
+
+| Mode | n | median (ms) | p95 (ms) |
+| --- | ---: | ---: | ---: |
+| Cold (fresh process each run) | 10 | 6024 | 13288 |
+| Warm (GET /v1/warm + shared process pool) | 10 | 6520 | 9703 |
+
+On this run from this network, median round-trip did not improve (warm was 496 ms slower at median). p95 dropped from 13288 ms to 9703 ms. Transcription and rewrite latency dominate; pre-warming mainly targets handshake cost and may help more on the first request after idle or on higher-latency paths. Raw per-run values are in the measure script stdout.
+
+---
+
+## Keyterms overcorrection (S2 / PRD §8)
+
+Measured 2026-09-12 with `npm run keyterms-experiment` on `clip-01.wav` and `clip-12.wav`. Each clip run twice: default `config={}` and `keyterms_prompt` with 100 common words (the, and, patient, allergic, book, flight, …).
+
+| Clip | Default config | Over-stuffed keyterms |
+| --- | --- | --- |
+| clip-01 | clean; verbatim and rewrite identical | clean; STT expands `Pt` → `Patient`; no inserted entities |
+| clip-12 | medium; inserted entity `i'm` (contraction FP) | clean; different STT disfluency path; no checker findings |
+
+No clear overcorrection pattern (inserted entities from boosted common words) on these two clips. clip-12's default run still shows the known contraction false positive; the overstuffed run changed STT wording enough that the rewrite path differed. Two clips is not a proof either way — the experiment is recorded for traceability.

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ground, annotateFindings } from '../ground.ts';
+import { ground, annotateFindings, findingCategory } from '../ground.ts';
 
 describe('ground', () => {
   it('negation dropped', () => {
@@ -108,6 +108,46 @@ describe('ground', () => {
     assert.ok(dropped);
     assert.equal(dropped.cause, 'rewrite');
     assert.equal(r.verdict.level, 'high');
+  });
+
+  it('S1 category: negation maps to negation', () => {
+    const r = ground(
+      'Patient is not allergic to penicillin.',
+      'Patient is allergic to penicillin.',
+    );
+    const f = r.findings.find((x) => x.kind === 'negation');
+    assert.ok(f);
+    assert.equal(findingCategory(f), 'negation');
+  });
+
+  it('S1 category: number maps to alphanumeric string', () => {
+    const r = ground(
+      'Transfer fifteen thousand naira.',
+      'Transfer 50,000 naira.',
+    );
+    const f = r.findings.find((x) => x.kind === 'number');
+    assert.ok(f);
+    assert.equal(findingCategory(f), 'alphanumeric string');
+  });
+
+  it('S1 category: invented name maps to proper noun or name', () => {
+    const r = ground(
+      'Book the flight for Tuesday morning.',
+      'Book the flight for Tuesday morning with Lufthansa.',
+    );
+    const f = r.findings.find((x) => /lufthansa/i.test(x.token));
+    assert.ok(f);
+    assert.equal(findingCategory(f), 'proper noun or name');
+  });
+
+  it('S1 category: domain jargon maps to domain terminology', () => {
+    const r = ground(
+      'Deploy to staging.',
+      'Deploy to the open-source cluster.',
+    );
+    const f = r.findings.find((x) => x.token === 'open-source');
+    assert.ok(f);
+    assert.equal(findingCategory(f), 'domain terminology');
   });
 
   it('R9 annotate: low confidence drop is mishearing cause', () => {

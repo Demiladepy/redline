@@ -9,11 +9,18 @@ import type { WordConfidence } from './ground.ts';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, 'public');
 const PORT = 8787;
-const UPSTREAM = 'https://dictation.assemblyai.com/v1/transcribe/live';
+const UPSTREAM_BASE = 'https://dictation.assemblyai.com';
+const UPSTREAM = `${UPSTREAM_BASE}/v1/transcribe/live`;
+const WARM_UPSTREAM = `${UPSTREAM_BASE}/v1/warm`;
 
 loadEnvFile(path.join(__dirname, '.env'));
 
-type ErrorBody = { error: string; hint: string };
+type ErrorBody = {
+  error: string;
+  hint: string;
+  silent?: boolean;
+  retry_after?: number | null;
+};
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -28,6 +35,9 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' || req.method === 'HEAD') {
       return serveStatic(req, res);
+    }
+    if (req.method === 'POST' && req.url === '/api/warm') {
+      return await warm(req, res);
     }
     if (req.method === 'POST' && req.url === '/api/transcribe') {
       return await transcribe(req, res);
@@ -89,6 +99,19 @@ async function readBody(req: IncomingMessage): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
+async function warm(_req: IncomingMessage, res: ServerResponse): Promise<void> {
+  try {
+    await fetch(WARM_UPSTREAM, {
+      method: 'GET',
+      signal: AbortSignal.timeout(5_000),
+    });
+    res.writeHead(204).end();
+  } catch {
+    // Best-effort; never block recording on warm failure.
+    res.writeHead(204).end();
+  }
+}
+
 async function check(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const raw = await readBody(req);
   let body: {
@@ -133,6 +156,7 @@ async function transcribe(req: IncomingMessage, res: ServerResponse): Promise<vo
       JSON.stringify({
         error: 'Empty body',
         hint: 'POST raw WAV bytes to /api/transcribe.',
+        silent: true,
       }),
     );
     return;
@@ -157,7 +181,7 @@ async function transcribe(req: IncomingMessage, res: ServerResponse): Promise<vo
   const rawText = await upstream.text();
   if (!upstream.ok) {
     console.error('upstream status', upstream.status, 'body length', rawText.length);
-    const mapped = mapUpstreamError(upstream.status);
+    const mapped = mapUpstreamError(upstream.status, rawText, upstream.headers);
     res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(mapped));
     return;
@@ -177,6 +201,15 @@ async function transcribe(req: IncomingMessage, res: ServerResponse): Promise<vo
     );
     return;
   }
+
+  const sessionId = typeof data.session_id === 'string' ? data.session_id : 'unknown';
+  const requestTimeMs = data.request_time_ms;
+  console.log(
+    'transcribe session_id',
+    sessionId,
+    'request_time_ms',
+    requestTimeMs ?? 'n/a',
+  );
 
   const text = typeof data.text === 'string' ? data.text : '';
   const llmResponse =
@@ -198,7 +231,39 @@ async function transcribe(req: IncomingMessage, res: ServerResponse): Promise<vo
   );
 }
 
-function mapUpstreamError(status: number): ErrorBody {
+function parseRetryAfter(headers: Headers): number | null {
+  const raw = headers.get('retry-after');
+  if (!raw) return null;
+  const seconds = Number.parseInt(raw, 10);
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
+}
+
+function looksLikeTooShort(body: string): boolean {
+  const lower = body.toLowerCase();
+  return (
+    lower.includes('audio_too_short') ||
+    lower.includes('too_short') ||
+    lower.includes('too short') ||
+    lower.includes('minimum') && lower.includes('duration')
+  );
+}
+
+function mapUpstreamError(
+  status: number,
+  body: string,
+  headers: Headers,
+): ErrorBody {
+  const retryAfter = status === 429 || status === 503 ? parseRetryAfter(headers) : null;
+
+  if (looksLikeTooShort(body)) {
+    return {
+      error: 'Clip too short to transcribe.',
+      hint: 'Hold the key longer or speak for at least a moment.',
+      silent: true,
+      retry_after: null,
+    };
+  }
+
   const table: Record<number, ErrorBody> = {
     400: {
       error: 'The request was malformed — config must precede audio.',
@@ -222,11 +287,13 @@ function mapUpstreamError(status: number): ErrorBody {
     },
     429: {
       error: 'Rate limited. Wait a moment and try again.',
-      hint: 'Backoff and retry once.',
+      hint: retryAfter != null ? `Retry after ${retryAfter} seconds.` : 'Backoff and retry once.',
+      retry_after: retryAfter,
     },
     503: {
       error: 'The service is at capacity. Try again shortly.',
-      hint: 'Temporary capacity limit.',
+      hint: retryAfter != null ? `Retry after ${retryAfter} seconds.` : 'Temporary capacity limit.',
+      retry_after: retryAfter,
     },
     502: {
       error: 'Transcription upstream is unavailable. Try again.',
@@ -237,12 +304,18 @@ function mapUpstreamError(status: number): ErrorBody {
       hint: 'Upstream timed out.',
     },
   };
-  return (
+
+  const mapped =
     table[status] || {
       error: 'Transcription request failed.',
       hint: `Upstream status ${status}.`,
-    }
-  );
+    };
+
+  if (retryAfter != null && mapped.retry_after == null) {
+    mapped.retry_after = retryAfter;
+  }
+
+  return mapped;
 }
 
 server.listen(PORT, () => {

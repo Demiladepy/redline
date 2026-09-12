@@ -469,6 +469,19 @@ function verdictLevel(findings) {
  *   flag a dropped negation when the final intent is unchanged (corpus clip-16).
  */
 
+/** Map internal finding kind to AssemblyAI S1 reporting category. */
+export function findingCategory(f) {
+  if (f.kind === 'negation') return 'negation';
+  if (f.kind === 'number') return 'alphanumeric string';
+  const t = f.token.toLowerCase();
+  if (t.startsWith('[')) return 'domain terminology';
+  if (/\d/.test(t)) return 'alphanumeric string';
+  if (/-/.test(t) || /(?:osis|itis|ectomy|ology|emia|pathy|ware|base|sql)$/i.test(t)) {
+    return 'domain terminology';
+  }
+  return 'proper noun or name';
+}
+
 /** STT confidence below this -> treat dropped token as likely mishearing (R9). */
 export const WORD_CONFIDENCE_THRESHOLD = 0.5;
 
