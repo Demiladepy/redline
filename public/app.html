@@ -3,30 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Redline — dictation</title>
+  <title>Redline — audit workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/site.css" />
   <style>
-    body {
-      background:
-        radial-gradient(700px 360px at 100% 0%, #dbe6ff 0%, transparent 50%),
-        var(--bg);
-    }
-
     .shell {
       max-width: 840px;
       margin: 0 auto;
       padding: 1rem 1.25rem 3rem;
-    }
-
-    .top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.5rem 0 1.25rem;
     }
 
     .top-links {
@@ -49,8 +35,9 @@
 
     .workspace h1 {
       font-family: var(--font-display);
-      font-size: clamp(1.6rem, 3vw, 2rem);
-      letter-spacing: -0.045em;
+      font-size: clamp(1.75rem, 3vw, 2.15rem);
+      font-weight: 400;
+      letter-spacing: -0.03em;
       margin: 0 0 0.35rem;
     }
 
@@ -58,14 +45,23 @@
       margin: 0 0 1.25rem;
       color: var(--muted);
       max-width: 40rem;
+      line-height: 1.5;
     }
 
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.65rem;
-      align-items: center;
-      margin-bottom: 1.15rem;
+    .workspace .lede code {
+      font-size: 0.9em;
+      background: var(--blue-soft);
+      color: var(--blue);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    .space-hint {
+      display: block;
+      margin-top: 0.65rem;
+      color: var(--muted);
+      font-size: 0.86rem;
+      text-align: center;
     }
 
     #recordBtn.recording {
@@ -74,8 +70,6 @@
       color: #fff;
       animation: rec-pulse 1.2s ease-in-out infinite;
     }
-
-    .hint { color: var(--muted); font-size: 0.9rem; }
 
     .paste-box {
       margin: 0 0 1.15rem;
@@ -234,32 +228,51 @@
     }
   </style>
 </head>
-<body>
+<body class="instrument">
   <div class="shell">
-    <header class="top">
+    <header class="instrument-header">
       <a class="brand" href="/">
         <img src="/logo.png" alt="" width="32" height="32" />
         <span>Redline</span>
       </a>
+      <div class="instrument-badge" title="Auditor mascot">
+        <span class="ninja ninja--idle" aria-hidden="true"></span>
+        <span>Audit instrument</span>
+      </div>
       <div class="top-links">
         <a href="/">Home</a>
       </div>
     </header>
 
     <main class="workspace">
-      <h1>Dictation</h1>
+      <h1>Audit workspace</h1>
       <p class="lede">
-        Record, then read the verdict first. The rewrite is checked against the verbatim.
+        Measurement layer on the Dictation API pair — <code>text</code> vs
+        <code>llm_response</code>. Feed any input below; read the verdict first,
+        then the marked rewrite and verbatim.
       </p>
 
-      <div class="controls">
-        <button type="button" class="primary" id="recordBtn">Record</button>
-        <button type="button" id="sampleBtn">Sample case (no API call)</button>
-        <span class="hint" id="spaceHint">Space to record</span>
-      </div>
+      <section class="input-strip" aria-label="Inputs to the checker">
+        <div class="input-card">
+          <h3>Record</h3>
+          <p>Live audio through the API</p>
+          <button type="button" class="primary" id="recordBtn">Record</button>
+        </div>
+        <div class="input-card">
+          <h3>Sample</h3>
+          <p>Offline penicillin case</p>
+          <button type="button" id="sampleBtn">Load sample</button>
+        </div>
+        <div class="input-card">
+          <h3>Paste</h3>
+          <p>Any pipeline pair</p>
+          <button type="button" id="pasteOpenBtn">Open paste</button>
+        </div>
+      </section>
+      <span class="space-hint" id="spaceHint">Space toggles record when no field is focused</span>
 
-      <details class="paste-box" id="pasteBox">
-        <summary>Paste mode — check any pipeline (no API call)</summary>
+      <details class="paste-box" id="pasteBox" hidden>
+        <summary>Paste pair — check any pipeline (no API call)</summary>
         <p class="paste-help">
           Paste what was said and what the tool produced. The checker runs in the browser only.
         </p>
@@ -273,7 +286,10 @@
       <div class="error" id="error" role="alert"></div>
 
       <!-- R3: verdict before detail -->
-      <div class="verdict" id="verdict" role="status"></div>
+      <div class="verdict-row">
+        <span class="ninja ninja--idle" id="verdictNinja" aria-hidden="true" hidden></span>
+        <div class="verdict" id="verdict" role="status"></div>
+      </div>
       <p class="source-note" id="sourceNote"></p>
 
       <section class="pane" id="rewritePane" hidden>
@@ -292,6 +308,35 @@
       </section>
 
       <div class="meta" id="meta"></div>
+
+      <div class="app-lang-strip lang-strip">
+        <div class="lang-strip-head">
+          <h3>Supported languages</h3>
+          <p>19 codes per API docs (announcement says 18)</p>
+        </div>
+        <div class="lang-chips" tabindex="0" aria-label="Dictation API language codes">
+          <span class="ninja ninja--run ninja--sprite ninja-lang-runner" aria-hidden="true"></span>
+          <span class="lang-chip">en</span>
+          <span class="lang-chip">es</span>
+          <span class="lang-chip">de</span>
+          <span class="lang-chip">fr</span>
+          <span class="lang-chip">it</span>
+          <span class="lang-chip">pt</span>
+          <span class="lang-chip">tr</span>
+          <span class="lang-chip">nl</span>
+          <span class="lang-chip">sv</span>
+          <span class="lang-chip">no</span>
+          <span class="lang-chip">da</span>
+          <span class="lang-chip">fi</span>
+          <span class="lang-chip">hi</span>
+          <span class="lang-chip">vi</span>
+          <span class="lang-chip">ar</span>
+          <span class="lang-chip">he</span>
+          <span class="lang-chip">ja</span>
+          <span class="lang-chip">zh</span>
+          <span class="lang-chip">ur</span>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -300,6 +345,9 @@
 
     const recordBtn = document.getElementById('recordBtn');
     const sampleBtn = document.getElementById('sampleBtn');
+    const pasteOpenBtn = document.getElementById('pasteOpenBtn');
+    const pasteBox = document.getElementById('pasteBox');
+    const verdictNinja = document.getElementById('verdictNinja');
     const pasteCheckBtn = document.getElementById('pasteCheckBtn');
     const pasteSaid = document.getElementById('pasteSaid');
     const pasteGot = document.getElementById('pasteGot');
@@ -359,6 +407,12 @@
     sampleBtn.addEventListener('click', () => {
       clearError();
       render(SAMPLE);
+    });
+
+    pasteOpenBtn.addEventListener('click', () => {
+      pasteBox.hidden = false;
+      pasteBox.open = true;
+      pasteSaid.focus();
     });
 
     pasteCheckBtn.addEventListener('click', () => {
@@ -663,6 +717,12 @@
     function setVerdict(level, sentence) {
       verdictEl.className = `verdict show ${level}`;
       verdictEl.textContent = sentence;
+      if (verdictNinja) {
+        verdictNinja.hidden = false;
+        verdictNinja.className = level === 'clean' || level === 'none'
+          ? 'ninja ninja--idle'
+          : 'ninja ninja--run ninja--sprite';
+      }
     }
 
     function renderFindings(findings) {

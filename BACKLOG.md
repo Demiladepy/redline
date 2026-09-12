@@ -13,3 +13,6 @@ hackathon — it exists so good ideas can be recorded without derailing the run.
 - P0 second half: R5 paste mode (browser ground.js, no network); R8 RESULTS sliced to 15-clip PRD quotas.
 - Dual ground: `ground.ts` (Node) and `public/ground.js` (browser). Keep behaviour in parity; prefer editing .ts then re-exporting JS.
 - P1 done (2026-09-12): R9 annotateFindings cause from words[].confidence (threshold 0.5, display-only); R10 Space ignores paste textareas / paste button.
+- Phase 2: full ninja path animation across the app workspace (verdict → findings → verbatim), not just hero track and language-chip hover.
+- Phase 2: language coverage benchmark UI — per-code drift counts from corpus runs, not just the static chip strip.
+- Phase 2: sprite atlas for ninja mascot (run/idle/alert poses) once usable source art exists; attached PNGs were solid black.

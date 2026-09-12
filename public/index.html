@@ -870,6 +870,11 @@
       }
     }
 
+    .hero-auditor {
+      position: relative;
+      margin-top: 0.5rem;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .pulse-dot {
         animation: none;
@@ -902,6 +907,7 @@
       <a href="#gap">Problem</a>
       <a href="#how">How it works</a>
       <a href="#try">Demo</a>
+      <a href="#languages">Languages</a>
       <a href="#evidence">Corpus</a>
       <a href="#faq">FAQ</a>
     </nav>
@@ -945,9 +951,19 @@
             <line x1="8" y1="23" x2="16" y2="23"/>
           </svg>
         </span>
-        Open dictation
+        Open audit workspace
       </a>
       <a class="btn-outline btn-lg" href="/app.html?sample=1">Sample case (no API call)</a>
+    </div>
+
+    <div class="hero-auditor reveal" data-gsap="hero">
+      <div class="ninja-track" aria-hidden="true">
+        <span class="ninja ninja--run ninja--sprite ninja-runner"></span>
+      </div>
+      <p class="ninja-note">
+        The ninja runs the line between what you said and what came back — same
+        pair the checker measures.
+      </p>
     </div>
 
     <div class="stage-wrap reveal" data-gsap="hero">
@@ -1064,6 +1080,43 @@
           <h3>Copy guard</h3>
           <p>On a high verdict, copy asks for confirmation first.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell section" id="languages">
+    <h2 class="reveal" data-gsap="scroll">Language coverage</h2>
+    <p class="intro reveal" data-gsap="scroll">
+      The Dictation API accepts <code>language_codes</code> on each request.
+      Docs list 19 ISO codes; the product announcement says 18. Redline will
+      benchmark rewrite drift per language — this strip is the stub.
+    </p>
+    <div class="lang-strip reveal" data-gsap="scroll">
+      <div class="lang-strip-head">
+        <h3>Supported codes (per API docs)</h3>
+        <p>Hover to preview audit path</p>
+      </div>
+      <div class="lang-chips" tabindex="0" aria-label="19 language codes from Dictation API docs">
+        <span class="ninja ninja--run ninja--sprite ninja-lang-runner" aria-hidden="true"></span>
+        <span class="lang-chip">en</span>
+        <span class="lang-chip">es</span>
+        <span class="lang-chip">de</span>
+        <span class="lang-chip">fr</span>
+        <span class="lang-chip">it</span>
+        <span class="lang-chip">pt</span>
+        <span class="lang-chip">tr</span>
+        <span class="lang-chip">nl</span>
+        <span class="lang-chip">sv</span>
+        <span class="lang-chip">no</span>
+        <span class="lang-chip">da</span>
+        <span class="lang-chip">fi</span>
+        <span class="lang-chip">hi</span>
+        <span class="lang-chip">vi</span>
+        <span class="lang-chip">ar</span>
+        <span class="lang-chip">he</span>
+        <span class="lang-chip">ja</span>
+        <span class="lang-chip">zh</span>
+        <span class="lang-chip">ur</span>
       </div>
     </div>
   </section>
@@ -1202,6 +1255,7 @@
       <div class="footer-links">
         <a href="/app.html">Open app</a>
         <a href="/app.html?sample=1">Sample case</a>
+        <a href="#languages">Languages</a>
         <a href="#evidence">Corpus</a>
       </div>
       <p class="footer-meta">AssemblyAI Hack into Dictation. Demilade Ayeku. 2026.</p>
