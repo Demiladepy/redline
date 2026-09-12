@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 32" fill="none" aria-hidden="true">
+  <!-- 4-frame run cycle, 32x32 each -->
+  <g transform="translate(0,0)">
+    <ellipse cx="16" cy="22" rx="2" ry="1" fill="#000" opacity="0.12"/>
+    <ellipse cx="16" cy="17" rx="7" ry="8" fill="#1a1f26"/>
+    <circle cx="16" cy="9" r="6" fill="#1a1f26"/>
+    <rect x="10" y="7" width="12" height="3" rx="1" fill="#3d8ec4"/>
+    <rect x="11" y="22" width="4" height="4" rx="1" fill="#1a1f26"/>
+    <rect x="17" y="20" width="4" height="5" rx="1" fill="#1a1f26"/>
+    <rect x="6" y="13" width="4" height="2" rx="1" fill="#1a1f26" transform="rotate(-25 8 14)"/>
+    <rect x="22" y="15" width="4" height="2" rx="1" fill="#1a1f26" transform="rotate(30 24 16)"/>
+  </g>
+  <g transform="translate(32,0)">
+    <ellipse cx="16" cy="22" rx="2" ry="1" fill="#000" opacity="0.12"/>
+    <ellipse cx="16" cy="17" rx="7" ry="8" fill="#1a1f26"/>
+    <circle cx="16" cy="9" r="6" fill="#1a1f26"/>
+    <rect x="10" y="7" width="12" height="3" rx="1" fill="#3d8ec4"/>
+    <rect x="12" y="21" width="4" height="5" rx="1" fill="#1a1f26"/>
+    <rect x="16" y="21" width="4" height="5" rx="1" fill="#1a1f26"/>
+    <rect x="5" y="14" width="4" height="2" rx="1" fill="#1a1f26" transform="rotate(-10 7 15)"/>
+    <rect x="23" y="14" width="4" height="2" rx="1" fill="#1a1f26" transform="rotate(10 25 15)"/>
+  </g>
+  <g transform="translate(64,0)">
+    <ellipse cx="16" cy="22" rx="2" ry="1" fill="#000" opacity="0.12"/>
+    <ellipse cx="16" cy="17" rx="7" ry="8" fill="#1a1f26"/>
+    <circle cx="16" cy="9" r="6" fill="#1a1f26"/>
+    <rect x="10" y="7" width="12" height="3" rx="1" fill="#3d8ec4"/>
+    <rect x="17" y="22" width="4" height="4" rx="1" fill="#1a1f26"/>
+    <rect x="11" y="20" width="4" height="5" rx="1" fill="#1a1f26"/>
+    <rect x="6" y="13" width="4" height="2" rx="1" fill="#1a1f26" transform="rotate(-25 8 14)"/>
+    <rect x="22" y="15" width="4" height="2" rx="1" fill="#1a1f26" transform="rotate(30 24 16)"/>
+  </g>
+  <g transform="translate(96,0)">
+    <ellipse cx="16" cy="22" rx="2" ry="1" fill="#000" opacity="0.12"/>
+    <ellipse cx="16" cy="17" rx="7" ry="8" fill="#1a1f26"/>
+    <circle cx="16" cy="9" r="6" fill="#1a1f26"/>
+    <rect x="10" y="7" width="12" height="3" rx="1" fill="#3d8ec4"/>
+    <rect x="12" y="21" width="4" height="5" rx="1" fill="#1a1f26"/>
+    <rect x="16" y="21" width="4" height="5" rx="1" fill="#1a1f26"/>
+    <rect x="5" y="14" width="4" height="2" rx="1" fill="#1a1f26" transform="rotate(-10 7 15)"/>
+    <rect x="23" y="14" width="4" height="2" rx="1" fill="#1a1f26" transform="rotate(10 25 15)"/>
+  </g>
+</svg>

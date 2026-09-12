@@ -77,56 +77,94 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   height: 2rem;
 }
 
-/* Ninja mascot — SVG placeholders (attached PNGs were blank) */
+/* Ninja mascot — 4-frame sprite sheet */
 .ninja {
   display: inline-block;
   width: 2.5rem;
   height: 2.5rem;
   flex-shrink: 0;
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
+  background-position: 0 0;
   image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .ninja--idle {
   background-image: url("/ninja-idle.svg");
+  background-size: contain;
+  background-position: center;
 }
 
-.ninja--run {
-  background-image: url("/ninja-run.svg");
+.ninja--run,
+.ninja--sprite {
+  background-image: url("/ninja-sprites.svg");
+  background-size: 400% 100%;
+  width: 2.75rem;
+  height: 2.75rem;
 }
 
 .ninja--sprite {
-  animation: ninja-sprite 0.45s steps(2) infinite;
+  animation: ninja-run-cycle 0.32s steps(4) infinite;
 }
 
-@keyframes ninja-sprite {
-  0%, 49% { background-image: url("/ninja-run.svg"); }
-  50%, 100% { background-image: url("/ninja-idle.svg"); }
+@keyframes ninja-run-cycle {
+  from { background-position: 0 0; }
+  to { background-position: 100% 0; }
 }
 
 .ninja-track {
   position: relative;
   margin: 2rem auto 0;
   max-width: 38rem;
-  height: 2.75rem;
-  border-top: 1px dashed rgba(18, 18, 18, 0.12);
-  overflow: hidden;
+  height: 3.25rem;
+  overflow: visible;
+}
+
+.ninja-track::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(61, 142, 196, 0.35) 0,
+    rgba(61, 142, 196, 0.35) 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  transform: translateY(-50%);
+}
+
+.ninja-track .ninja-runner-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.75rem;
+  height: 100%;
+  animation: ninja-patrol 8s ease-in-out infinite;
+  will-change: left, transform;
 }
 
 .ninja-track .ninja-runner {
   position: absolute;
-  bottom: 0.35rem;
+  bottom: 0.15rem;
   left: 0;
-  width: 2.25rem;
-  height: 2.25rem;
-  animation: ninja-run-track 9s linear infinite;
+  filter: drop-shadow(0 2px 3px rgba(18, 18, 18, 0.15));
+  animation: ninja-bob 0.32s steps(4) infinite;
 }
 
-@keyframes ninja-run-track {
-  0% { left: -2.5rem; transform: translateX(0); }
-  100% { left: 100%; transform: translateX(0); }
+@keyframes ninja-patrol {
+  0% { left: -0.25rem; transform: scaleX(1); }
+  49% { left: calc(100% - 2.5rem); transform: scaleX(1); }
+  50% { left: calc(100% - 2.5rem); transform: scaleX(-1); }
+  100% { left: -0.25rem; transform: scaleX(-1); }
+}
+
+@keyframes ninja-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
 .ninja-note {
@@ -201,23 +239,36 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .lang-chips .ninja-lang-runner {
   position: absolute;
-  top: -1.6rem;
+  top: -2rem;
   left: 0;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2rem;
+  height: 2rem;
   pointer-events: none;
-  opacity: 0;
-  animation: ninja-lang-hop 14s linear infinite;
+  opacity: 0.85;
+  filter: drop-shadow(0 1px 2px rgba(18, 18, 18, 0.12));
+  animation:
+    ninja-lang-hop 18s linear infinite,
+    ninja-run-cycle 0.28s steps(4) infinite,
+    ninja-lang-bob 0.28s steps(4) infinite;
 }
 
 .lang-chips:hover .ninja-lang-runner,
 .lang-chips:focus-within .ninja-lang-runner {
   opacity: 1;
+  animation-duration: 12s, 0.22s, 0.22s;
 }
 
 @keyframes ninja-lang-hop {
-  0% { left: 0; }
-  100% { left: calc(100% - 1.75rem); }
+  0% { left: 0; transform: translateY(0) scaleX(1); }
+  48% { left: calc(100% - 2rem); transform: translateY(0) scaleX(1); }
+  50% { left: calc(100% - 2rem); transform: translateY(0) scaleX(-1); }
+  98% { left: 0; transform: translateY(0) scaleX(-1); }
+  100% { left: 0; transform: translateY(0) scaleX(1); }
+}
+
+@keyframes ninja-lang-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -3px; }
 }
 
 /* App instrument workspace */
@@ -350,12 +401,13 @@ body.instrument {
   }
 
   .ninja--sprite,
+  .ninja-track .ninja-runner-wrap,
   .ninja-track .ninja-runner,
   .lang-chips .ninja-lang-runner {
-    animation: none;
+    animation: none !important;
   }
 
-  .ninja-track .ninja-runner {
+  .ninja-track .ninja-runner-wrap {
     left: 50%;
     transform: translateX(-50%);
   }
