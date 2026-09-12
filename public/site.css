@@ -77,9 +77,290 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   height: 2rem;
 }
 
+/* Ninja mascot — SVG placeholders (attached PNGs were blank) */
+.ninja {
+  display: inline-block;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  image-rendering: pixelated;
+}
+
+.ninja--idle {
+  background-image: url("/ninja-idle.svg");
+}
+
+.ninja--run {
+  background-image: url("/ninja-run.svg");
+}
+
+.ninja--sprite {
+  animation: ninja-sprite 0.45s steps(2) infinite;
+}
+
+@keyframes ninja-sprite {
+  0%, 49% { background-image: url("/ninja-run.svg"); }
+  50%, 100% { background-image: url("/ninja-idle.svg"); }
+}
+
+.ninja-track {
+  position: relative;
+  margin: 2rem auto 0;
+  max-width: 38rem;
+  height: 2.75rem;
+  border-top: 1px dashed rgba(18, 18, 18, 0.12);
+  overflow: hidden;
+}
+
+.ninja-track .ninja-runner {
+  position: absolute;
+  bottom: 0.35rem;
+  left: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  animation: ninja-run-track 9s linear infinite;
+}
+
+@keyframes ninja-run-track {
+  0% { left: -2.5rem; transform: translateX(0); }
+  100% { left: 100%; transform: translateX(0); }
+}
+
+.ninja-note {
+  margin: 0.85rem auto 0;
+  max-width: 34rem;
+  font-size: 0.92rem;
+  color: var(--muted, #6b6b6b);
+  line-height: 1.45;
+}
+
+.ninja-note strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+/* Language coverage strip (stub — full benchmark in Phase 2) */
+.lang-strip {
+  margin: 0 auto;
+  max-width: 52rem;
+}
+
+.lang-strip-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.lang-strip-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.lang-strip-head p {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.lang-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  position: relative;
+}
+
+.lang-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.35rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--line, rgba(18, 18, 18, 0.1));
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink, #121212);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.lang-chips:hover .lang-chip,
+.lang-chips:focus-within .lang-chip {
+  border-color: rgba(61, 142, 196, 0.35);
+}
+
+.lang-chips .ninja-lang-runner {
+  position: absolute;
+  top: -1.6rem;
+  left: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  pointer-events: none;
+  opacity: 0;
+  animation: ninja-lang-hop 14s linear infinite;
+}
+
+.lang-chips:hover .ninja-lang-runner,
+.lang-chips:focus-within .ninja-lang-runner {
+  opacity: 1;
+}
+
+@keyframes ninja-lang-hop {
+  0% { left: 0; }
+  100% { left: calc(100% - 1.75rem); }
+}
+
+/* App instrument workspace */
+body.instrument {
+  --bg: #faf9f6;
+  --bg-elev: #ffffff;
+  --ink: #121212;
+  --muted: #6b6b6b;
+  --line: rgba(18, 18, 18, 0.1);
+  --blue: #3d8ec4;
+  --blue-deep: #2a6f9e;
+  --blue-soft: #eef7fd;
+  --shadow: 0 24px 60px rgba(18, 18, 18, 0.06);
+  --font-display: "Instrument Serif", "Syne", Georgia, serif;
+}
+
+body.instrument {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent calc(8.333% - 1px),
+      rgba(18, 18, 18, 0.03) calc(8.333% - 1px),
+      rgba(18, 18, 18, 0.03) 8.333%
+    ),
+    var(--bg);
+}
+
+.instrument-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0 1.25rem;
+}
+
+.instrument-header .brand {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.5rem;
+}
+
+.instrument-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.instrument-badge .ninja {
+  width: 1.65rem;
+  height: 1.65rem;
+}
+
+.input-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.65rem;
+  margin-bottom: 1.15rem;
+}
+
+.input-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.85rem 0.9rem;
+  background: #fff;
+}
+
+.input-card h3 {
+  margin: 0 0 0.2rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.input-card p {
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.input-card button {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.88rem;
+  border-radius: 10px;
+}
+
+.input-card button.primary {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.verdict-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+}
+
+.verdict-row .ninja {
+  margin-top: 0.55rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.verdict-row .verdict {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.app-lang-strip {
+  margin: 1.15rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 640px) {
+  .input-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation: none !important;
     transition: none !important;
+  }
+
+  .ninja--sprite,
+  .ninja-track .ninja-runner,
+  .lang-chips .ninja-lang-runner {
+    animation: none;
+  }
+
+  .ninja-track .ninja-runner {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .lang-chips .ninja-lang-runner {
+    display: none;
   }
 }
