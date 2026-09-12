@@ -558,12 +558,175 @@
       line-height: 1.45;
     }
 
-    footer {
-      padding: 1.5rem 0 2.5rem;
+    /* FAQ */
+    .faq-section {
+      padding: 5rem 0;
+    }
+
+    .faq-layout {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 3.5rem;
+      align-items: start;
+      max-width: 56rem;
+      margin: 0 auto;
+    }
+
+    .faq-left h2 {
+      font-family: var(--landing-serif);
+      font-weight: 400;
+      font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin: 0 0 1rem;
+      text-align: left;
+    }
+
+    .faq-left p {
       color: var(--landing-muted);
-      font-size: 0.9rem;
+      font-size: 1.05rem;
+      line-height: 1.55;
+      margin: 0 0 1.75rem;
+      max-width: 22rem;
+    }
+
+    .faq-mascot {
+      margin-top: 2.5rem;
+      width: 4.5rem;
+      height: 4.5rem;
+      border-radius: 14px;
+      background: var(--landing-accent-soft);
+      border: 1px solid var(--landing-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--landing-accent-strong);
+    }
+
+    .faq-mascot svg {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .faq-item {
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .faq-item summary {
+      list-style: none;
+      cursor: pointer;
+      border: 1px solid var(--landing-line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 1rem 1.15rem;
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.45;
+      color: var(--landing-ink);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .faq-item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-item summary:hover {
+      border-color: rgba(18, 18, 18, 0.18);
+      box-shadow: 0 8px 24px rgba(18, 18, 18, 0.04);
+    }
+
+    .faq-item[open] summary {
+      border-color: var(--landing-accent);
+      background: var(--landing-accent-soft);
+    }
+
+    .faq-answer {
+      margin: 0.65rem 0 0 1.5rem;
+      max-width: 28rem;
+      margin-left: auto;
+      padding: 1rem 1.15rem;
+      border-radius: 18px;
+      background: var(--landing-ink);
+      color: #fff;
+      font-size: 0.96rem;
+      line-height: 1.55;
+    }
+
+    /* Footer */
+    .site-footer {
+      position: relative;
+      margin-top: 1rem;
+      padding: 0 1.5rem 2rem;
+      overflow: hidden;
+    }
+
+    .footer-panel {
+      border: 1px solid var(--landing-line);
+      border-radius: 28px;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 100%, var(--landing-accent-soft) 0%, transparent 70%),
+        #fff;
+      padding: 4rem 1.5rem 2.5rem;
       text-align: center;
+    }
+
+    .footer-wordmark {
+      font-family: var(--landing-serif);
+      font-weight: 400;
+      font-size: clamp(4.5rem, 16vw, 11rem);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      margin: 0;
+      border: 0;
+      padding: 0;
+      background: linear-gradient(165deg, var(--landing-ink) 30%, var(--landing-accent-strong) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      user-select: none;
+    }
+
+    .footer-tag {
+      margin: 1rem auto 0;
+      max-width: 28rem;
+      color: var(--landing-muted);
+      font-size: 1.05rem;
+      line-height: 1.5;
+    }
+
+    .footer-meta {
+      margin: 2rem 0 0;
+      padding-top: 1.5rem;
       border-top: 1px solid var(--landing-line);
+      color: var(--landing-muted);
+      font-size: 0.88rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-top: 1.25rem;
+    }
+
+    .footer-links a {
+      color: var(--landing-accent-strong);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
     }
 
     @keyframes blink {
@@ -597,6 +760,20 @@
 
       .stats {
         grid-template-columns: repeat(2, 1fr);
+      }
+
+      .faq-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .faq-left p {
+        max-width: none;
+      }
+
+      .faq-answer {
+        margin-left: 0;
+        max-width: none;
       }
     }
 
@@ -632,6 +809,7 @@
       <a href="#how">How it works</a>
       <a href="#try">Demo</a>
       <a href="#evidence">Corpus</a>
+      <a href="#faq">FAQ</a>
     </nav>
 
     <div class="top-actions reveal" data-gsap="header">
@@ -849,8 +1027,76 @@
     </div>
   </section>
 
-  <footer class="shell">
-    Redline. AssemblyAI Hack into Dictation. Demilade Ayeku. 2026.
+  <section class="shell section faq-section" id="faq">
+    <div class="faq-layout">
+      <div class="faq-left reveal" data-gsap="scroll">
+        <h2>Frequently asked questions</h2>
+        <p>Common questions about what Redline checks and how to try it.</p>
+        <a class="btn-dark btn-lg" href="/app.html">Open app</a>
+        <div class="faq-mascot" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            <line x1="8" y1="7" x2="16" y2="7"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="faq-list reveal" data-gsap="scroll">
+        <details class="faq-item" open>
+          <summary>What does Redline actually check?</summary>
+          <p class="faq-answer">
+            It compares the verbatim transcript and the cleanup rewrite from one
+            Dictation API response. It flags dropped or inserted negations, numbers,
+            and entities that do not trace back to what was said.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>Does the checker use another LLM?</summary>
+          <p class="faq-answer">
+            No. The aligner is deterministic token rules and tests. A second model
+            grading the first would defeat the point.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>Can I try it without an API key?</summary>
+          <p class="faq-answer">
+            Yes. The sample case and paste mode run entirely in the browser with no
+            network call. Live recording needs a key on the server.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>Why does a bad rewrite still return success?</summary>
+          <p class="faq-answer">
+            The Dictation API can return HTTP 200 with a null error even when the
+            cleanup changed meaning. Redline is built for that gap, not for failed
+            requests.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>How is this different from a dictation app?</summary>
+          <p class="faq-answer">
+            Redline is a measurement layer. The UI is a demo. The submission is the
+            checker, a 15-clip corpus, and an honest list of false positives and
+            misses.
+          </p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer shell">
+    <div class="footer-panel reveal" data-gsap="scroll">
+      <h2 class="footer-wordmark">Redline</h2>
+      <p class="footer-tag">The cleanup can change what you said, and this shows you when it does.</p>
+      <div class="footer-links">
+        <a href="/app.html">Open app</a>
+        <a href="/app.html?sample=1">Sample case</a>
+        <a href="#evidence">Corpus</a>
+      </div>
+      <p class="footer-meta">AssemblyAI Hack into Dictation. Demilade Ayeku. 2026.</p>
+    </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -906,6 +1152,31 @@
             duration: 0.75,
             stagger: 0.08,
             ease: 'power2.out',
+          });
+        });
+
+        const footerPanel = document.querySelector('.footer-panel');
+        if (footerPanel) {
+          gsap.set(footerPanel, { y: 40, opacity: 0 });
+          gsap.to(footerPanel, {
+            scrollTrigger: {
+              trigger: footerPanel,
+              start: 'top 88%',
+              once: true,
+            },
+            y: 0,
+            opacity: 1,
+            duration: 0.9,
+            ease: 'power2.out',
+          });
+        }
+
+        document.querySelectorAll('.faq-item').forEach((item) => {
+          item.addEventListener('toggle', () => {
+            if (!item.open) return;
+            document.querySelectorAll('.faq-item').forEach((other) => {
+              if (other !== item) other.open = false;
+            });
           });
         });
 
