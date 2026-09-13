@@ -222,6 +222,234 @@
       font-size: 0.9rem;
     }
 
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.55rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .metric-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.75rem 0.85rem;
+      background: #fbfcfd;
+    }
+
+    .metric-card .val {
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-card .val.warn { color: var(--high); }
+
+    .metric-card .lbl {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .how-read {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      margin-bottom: 1.15rem;
+      background: var(--blue-soft);
+      font-size: 0.92rem;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .how-read summary {
+      cursor: pointer;
+      padding: 0.85rem 1rem;
+      font-weight: 600;
+    }
+
+    .how-read .how-body {
+      padding: 0 1rem 0.85rem;
+    }
+
+    .how-read ol {
+      margin: 0.35rem 0 0;
+      padding-left: 1.2rem;
+    }
+
+    .how-read li { margin-bottom: 0.25rem; }
+
+    .metrics-empty {
+      grid-column: 1 / -1;
+      font-size: 0.9rem;
+      color: var(--muted);
+      padding: 0.5rem 0;
+    }
+
+    .empty-state .preview-text {
+      margin: 0;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: var(--muted);
+      opacity: 0.55;
+    }
+
+    mark.linked,
+    .word-hit.linked {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    .verbatim-words {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.5rem;
+      line-height: 1.6;
+    }
+
+    .word-unit {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .word-unit .conf-bar {
+      height: 3px;
+      border-radius: 2px;
+      background: var(--blue);
+      margin-top: 2px;
+      min-width: 1.2rem;
+    }
+
+    .corpus-panel {
+      margin-top: 1.25rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.75rem 1rem;
+      background: #fbfcfd;
+    }
+
+    .corpus-panel summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-family: var(--font-display);
+    }
+
+    .corpus-table-wrap { overflow-x: auto; margin-top: 0.65rem; }
+
+    .corpus-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .corpus-table th,
+    .corpus-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 0.4rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .limits-list {
+      margin: 0.5rem 0 0;
+      padding-left: 1.15rem;
+    }
+
+    .limits-list li { margin-bottom: 0.35rem; }
+
+    .linkish {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      color: var(--blue);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #fff;
+    }
+
+    .empty-state p {
+      margin: 0.75rem 0 0;
+      font-size: 0.92rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .compare-preview {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+
+    .compare-preview .col {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.75rem;
+      min-height: 4.5rem;
+      background: #fbfcfd;
+    }
+
+    .compare-preview .col h3 {
+      margin: 0 0 0.4rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .compare-preview .col p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .compare-grid .pane { margin-bottom: 0; }
+
+    .limits-note {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .limits-note strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .lang-footnote {
+      margin-top: 1rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    @media (max-width: 720px) {
+      .metrics-row { grid-template-columns: repeat(2, 1fr); }
+      .compare-preview,
+      .compare-grid { grid-template-columns: 1fr; }
+    }
+
     @keyframes rec-pulse {
       0%, 100% { box-shadow: 0 0 0 0 rgba(192, 21, 16, 0.35); }
       50% { box-shadow: 0 0 0 8px rgba(192, 21, 16, 0); }
@@ -235,8 +463,7 @@
         <img src="/logo.png" alt="" width="32" height="32" />
         <span>Redline</span>
       </a>
-      <div class="instrument-badge" title="Auditor mascot">
-        <span class="ninja ninja--idle" aria-hidden="true"></span>
+      <div class="instrument-badge">
         <span>Audit instrument</span>
       </div>
       <div class="top-links">
@@ -247,10 +474,41 @@
     <main class="workspace">
       <h1>Audit workspace</h1>
       <p class="lede">
-        Measurement layer on the Dictation API pair — <code>text</code> vs
-        <code>llm_response</code>. Feed any input below; read the verdict first,
-        then the marked rewrite and verbatim.
+        This is not a dictation app. It compares the Dictation API pair —
+        <code>text</code> (verbatim) vs <code>llm_response</code> (cleanup) — and
+        shows where they diverge.
       </p>
+
+      <div class="metrics-row" id="metricsRow" aria-label="Corpus headline">
+        <div class="metric-card" id="metricCardTotal">
+          <div class="val" id="metricTotal">…</div>
+          <div class="lbl">clips in corpus</div>
+        </div>
+        <div class="metric-card" id="metricCardHigh">
+          <div class="val warn" id="metricHigh">…</div>
+          <div class="lbl">high verdicts</div>
+        </div>
+        <div class="metric-card" id="metricCardMedium">
+          <div class="val" id="metricMedium">…</div>
+          <div class="lbl">medium verdict</div>
+        </div>
+        <div class="metric-card" id="metricCardClean">
+          <div class="val" id="metricClean">…</div>
+          <div class="lbl">clean</div>
+        </div>
+      </div>
+
+      <details class="how-read" id="howRead" open>
+        <summary>How to read a run</summary>
+        <div class="how-body">
+          <ol>
+            <li>Verdict first — did meaning possibly change?</li>
+            <li>Rewrite with inline marks — what the cleanup produced.</li>
+            <li>Findings list — each dropped or inserted token with category.</li>
+            <li>Verbatim with confidence bars when the API returns <code>words[]</code>.</li>
+          </ol>
+        </div>
+      </details>
 
       <section class="input-strip" aria-label="Inputs to the checker">
         <div class="input-card">
@@ -285,69 +543,92 @@
 
       <div class="error" id="error" role="alert"></div>
 
-      <!-- R3: verdict before detail -->
-      <div class="verdict-row">
-        <span class="ninja ninja--idle" id="verdictNinja" aria-hidden="true" hidden></span>
-        <div class="verdict" id="verdict" role="status"></div>
-      </div>
-      <p class="source-note" id="sourceNote"></p>
-
-      <section class="pane" id="rewritePane" hidden>
-        <h2>Rewrite</h2>
-        <div class="text" id="rewrite"></div>
-        <div class="copy-row">
-          <button type="button" id="copyBtn" hidden>Copy rewrite</button>
+      <div class="empty-state" id="emptyState">
+        <div class="compare-preview">
+          <div class="col">
+            <h3>Verbatim (<code>text</code>)</h3>
+            <p class="preview-text" id="previewVerbatim"></p>
+          </div>
+          <div class="col">
+            <h3>Rewrite (<code>llm_response</code>)</h3>
+            <p class="preview-text" id="previewRewrite"></p>
+          </div>
         </div>
-      </section>
+        <p>
+          Sample pair shown dimmed. Marks mean a token does not trace back.
+          <button type="button" id="previewSampleBtn" class="linkish">Load sample</button>
+          — recorded response, no API call.
+        </p>
+      </div>
+
+      <!-- R3: verdict before detail -->
+      <div class="verdict" id="verdict" role="status"></div>
+      <p class="source-note" id="sourceNote"></p>
 
       <ul class="findings" id="findings" aria-label="Findings"></ul>
 
-      <section class="pane" id="verbatimPane" hidden>
-        <h2>Verbatim · source of truth</h2>
-        <div class="text" id="verbatim"></div>
-      </section>
+      <div class="compare-grid" id="compareGrid" hidden>
+        <section class="pane" id="rewritePane">
+          <h2>Rewrite</h2>
+          <div class="text" id="rewrite"></div>
+          <div class="copy-row">
+            <button type="button" id="copyBtn" hidden>Copy rewrite</button>
+          </div>
+        </section>
+        <section class="pane" id="verbatimPane">
+          <h2>Verbatim</h2>
+          <div class="text" id="verbatim"></div>
+        </section>
+      </div>
 
       <div class="meta" id="meta"></div>
 
-      <div class="app-lang-strip lang-strip">
-        <div class="lang-strip-head">
-          <h3>Supported languages</h3>
-          <p>19 codes per API docs (announcement says 18)</p>
-        </div>
-        <div class="lang-chips" tabindex="0" aria-label="Dictation API language codes">
-          <span class="ninja ninja--run ninja--sprite ninja-lang-runner" aria-hidden="true"></span>
-          <span class="lang-chip">en</span>
-          <span class="lang-chip">es</span>
-          <span class="lang-chip">de</span>
-          <span class="lang-chip">fr</span>
-          <span class="lang-chip">it</span>
-          <span class="lang-chip">pt</span>
-          <span class="lang-chip">tr</span>
-          <span class="lang-chip">nl</span>
-          <span class="lang-chip">sv</span>
-          <span class="lang-chip">no</span>
-          <span class="lang-chip">da</span>
-          <span class="lang-chip">fi</span>
-          <span class="lang-chip">hi</span>
-          <span class="lang-chip">vi</span>
-          <span class="lang-chip">ar</span>
-          <span class="lang-chip">he</span>
-          <span class="lang-chip">ja</span>
-          <span class="lang-chip">zh</span>
-          <span class="lang-chip">ur</span>
-        </div>
+      <div class="limits-note">
+        <strong>Known limits</strong> (from <code>ground.js</code>, English-calibrated checker):
+        <ul class="limits-list" id="knownLimits"></ul>
       </div>
+
+      <details class="corpus-panel" id="corpusPanel">
+        <summary>Corpus evidence (15 clips)</summary>
+        <p class="paste-help" id="corpusPanelNote">Loaded from corpus-results-15.json on disk.</p>
+        <div class="corpus-table-wrap">
+          <table class="corpus-table" id="corpusTable" hidden>
+            <thead>
+              <tr>
+                <th>Clip</th>
+                <th>Category</th>
+                <th>Verdict</th>
+                <th>Findings</th>
+              </tr>
+            </thead>
+            <tbody id="corpusTableBody"></tbody>
+          </table>
+        </div>
+      </details>
+
+      <p class="lang-footnote">
+        Dictation API supports 19 language codes per docs (announcement lists 18).
+        This corpus was recorded in English only. Per-language drift is not measured yet.
+      </p>
     </main>
   </div>
 
   <script type="module">
-    import { ground, annotateFindings, findingCategory } from '/ground.js';
+    import {
+      ground,
+      annotateFindings,
+      findingCategory,
+      KNOWN_LIMITS,
+      WORD_CONFIDENCE_THRESHOLD,
+    } from '/ground.js';
+    import { loadCorpusStats, applyMetricCards } from '/corpus-stats.js';
 
     const recordBtn = document.getElementById('recordBtn');
     const sampleBtn = document.getElementById('sampleBtn');
     const pasteOpenBtn = document.getElementById('pasteOpenBtn');
     const pasteBox = document.getElementById('pasteBox');
-    const verdictNinja = document.getElementById('verdictNinja');
+    const emptyState = document.getElementById('emptyState');
+    const compareGrid = document.getElementById('compareGrid');
     const pasteCheckBtn = document.getElementById('pasteCheckBtn');
     const pasteSaid = document.getElementById('pasteSaid');
     const pasteGot = document.getElementById('pasteGot');
@@ -361,8 +642,17 @@
     const rewritePane = document.getElementById('rewritePane');
     const verbatimPane = document.getElementById('verbatimPane');
     const metaEl = document.getElementById('meta');
+    const howRead = document.getElementById('howRead');
+    const previewVerbatim = document.getElementById('previewVerbatim');
+    const previewRewrite = document.getElementById('previewRewrite');
+    const previewSampleBtn = document.getElementById('previewSampleBtn');
+    const knownLimitsEl = document.getElementById('knownLimits');
+    const corpusTable = document.getElementById('corpusTable');
+    const corpusTableBody = document.getElementById('corpusTableBody');
+    const corpusPanelNote = document.getElementById('corpusPanelNote');
 
     let recording = false;
+    let hasRendered = false;
     let audioCtx = null;
     let workletNode = null;
     let mediaStream = null;
@@ -399,10 +689,37 @@
         { text: 'twice', confidence: 0.93 },
         { text: 'daily', confidence: 0.94 },
       ],
-      verdict: { level: 'high' },
-      findings: [{ direction: 'dropped', kind: 'negation', token: 'not' }],
       offlineSample: true,
     };
+
+    previewVerbatim.textContent = SAMPLE.text;
+    previewRewrite.textContent = SAMPLE.llm_response;
+
+    for (const line of KNOWN_LIMITS) {
+      const li = document.createElement('li');
+      li.textContent = line;
+      knownLimitsEl.appendChild(li);
+    }
+
+    previewSampleBtn.addEventListener('click', () => sampleBtn.click());
+
+    loadCorpusStats()
+      .then(({ rows, manifest, counts }) => {
+        applyMetricCards(counts, {
+          total: document.getElementById('metricTotal'),
+          high: document.getElementById('metricHigh'),
+          medium: document.getElementById('metricMedium'),
+          clean: document.getElementById('metricClean'),
+        });
+        renderCorpusTable(rows, manifest);
+      })
+      .catch(() => {
+        const row = document.getElementById('metricsRow');
+        row.innerHTML =
+          '<p class="metrics-empty">Corpus not loaded. Run <code>npm run corpus</code> with AAI_API_KEY set, then refresh.</p>';
+        corpusPanelNote.textContent =
+          'corpus-results-15.json not found. Run npm run corpus to generate it.';
+      });
 
     sampleBtn.addEventListener('click', () => {
       clearError();
@@ -650,27 +967,28 @@
         rewrite = text;
         verdict = { level: 'none' };
         findings = [];
+      } else if (data.pasteMode || data.offlineSample || !data.findings?.length) {
+        const checked = ground(text, rewrite);
+        findings = checked.findings;
+        verdict = checked.verdict;
+      }
+
+      if (rewrite == null || verdict?.level === 'none') {
         setVerdict('none', 'No rewrite came back. This is exactly what you said.');
+      } else if (verdict?.level === 'clean') {
+        setVerdict('clean', 'Clean. The rewrite does not look like it changed the meaning.');
+      } else if (verdict?.level === 'high') {
+        setVerdict(
+          'high',
+          `Meaning may have changed. ${findings.length} finding(s) in the rewrite.`,
+        );
+      } else if (verdict?.level === 'medium') {
+        setVerdict(
+          'medium',
+          `A name or entity differs. ${findings.length} finding(s) in the rewrite.`,
+        );
       } else {
-        if (!verdict) {
-          setVerdict('clean', 'Clean. The rewrite does not look like it changed the meaning.');
-        } else if (verdict.level === 'clean') {
-          setVerdict('clean', 'Clean. The rewrite does not look like it changed the meaning.');
-        } else if (verdict.level === 'none') {
-          setVerdict('none', 'No rewrite came back. This is exactly what you said.');
-        } else if (verdict.level === 'high') {
-          setVerdict(
-            'high',
-            `Meaning may have changed. ${findings.length} finding(s) in the rewrite.`,
-          );
-        } else if (verdict.level === 'medium') {
-          setVerdict(
-            'medium',
-            `A name or entity differs. ${findings.length} finding(s) in the rewrite.`,
-          );
-        } else {
-          setVerdict(verdict.level, `${verdict.level} severity — ${findings.length} finding(s).`);
-        }
+        setVerdict(verdict?.level ?? 'clean', `${findings.length} finding(s).`);
       }
 
       if (data.offlineSample) {
@@ -684,12 +1002,17 @@
         sourceNote.classList.remove('show');
       }
 
-      rewritePane.hidden = false;
-      verbatimPane.hidden = false;
+      if (emptyState) emptyState.hidden = true;
+      if (compareGrid) compareGrid.hidden = false;
+      if (howRead && !hasRendered) {
+        howRead.open = false;
+        hasRendered = true;
+      }
       const annotated = annotateFindings(findings, data.words || null);
       rewriteEl.innerHTML = highlightRewrite(rewrite, annotated);
-      verbatimEl.textContent = text;
+      renderVerbatim(text, data.words || null, annotated);
       renderFindings(annotated);
+      wireLinkedHighlights(annotated);
 
       lastRewriteText = rewrite ?? '';
       highFindingCount = (annotated || []).filter(
@@ -717,12 +1040,6 @@
     function setVerdict(level, sentence) {
       verdictEl.className = `verdict show ${level}`;
       verdictEl.textContent = sentence;
-      if (verdictNinja) {
-        verdictNinja.hidden = false;
-        verdictNinja.className = level === 'clean' || level === 'none'
-          ? 'ninja ninja--idle'
-          : 'ninja ninja--run ninja--sprite';
-      }
     }
 
     function renderFindings(findings) {
@@ -741,15 +1058,117 @@
             ? `Dropped ${cat}: “${f.token}” was in the verbatim and is missing from the rewrite.`
             : `Inserted ${cat}: “${f.token}” appears in the rewrite and does not trace back to the verbatim.`;
         if (f.direction === 'dropped' && f.cause === 'rewrite') {
-          label += ` Cause: likely rewrite (STT confidence ${formatConf(f.word_confidence)} >= 0.5).`;
+          label += ` Cause: likely rewrite (STT confidence ${formatConf(f.word_confidence)} >= ${WORD_CONFIDENCE_THRESHOLD}).`;
         } else if (f.direction === 'dropped' && f.cause === 'mishearing') {
-          label += ` Cause: likely mishearing (STT confidence ${formatConf(f.word_confidence)} < 0.5).`;
+          label += ` Cause: likely mishearing (STT confidence ${formatConf(f.word_confidence)} < ${WORD_CONFIDENCE_THRESHOLD}).`;
         } else if (f.direction === 'dropped' && f.cause === 'unknown') {
           label += ' Cause: unknown (no matching word confidence).';
         }
+        li.dataset.findingIndex = String(findingsEl.children.length);
         li.innerHTML = `<span class="tag ${sev}">${sev}</span>${escapeHtml(label)}`;
+        li.tabIndex = 0;
         findingsEl.appendChild(li);
       }
+    }
+
+    function renderCorpusTable(rows, manifest) {
+      corpusTableBody.innerHTML = '';
+      for (const row of rows) {
+        const tr = document.createElement('tr');
+        const cat = manifest[row.file] ?? '—';
+        const n = (row.findings || []).length;
+        tr.innerHTML = `<td>${escapeHtml(row.file)}</td><td>${escapeHtml(cat)}</td><td>${escapeHtml(row.verdict ?? '—')}</td><td>${n}</td>`;
+        corpusTableBody.appendChild(tr);
+      }
+      corpusTable.hidden = false;
+    }
+
+    function renderVerbatim(text, words, findings) {
+      if (!words || !words.length) {
+        verbatimEl.innerHTML = highlightVerbatimPlain(text, findings);
+        return;
+      }
+      const wrap = document.createElement('div');
+      wrap.className = 'verbatim-words';
+      const dropped = new Set(
+        (findings || [])
+          .filter((f) => f.direction === 'dropped' && f.token && !f.token.startsWith('['))
+          .map((f) => f.token.toLowerCase()),
+      );
+      for (const w of words) {
+        const unit = document.createElement('span');
+        unit.className = 'word-unit';
+        const span = document.createElement('span');
+        span.className = 'word-hit';
+        span.textContent = w.text;
+        const key = w.text.toLowerCase().replace(/[^\w']/g, '');
+        if (dropped.has(key) || dropped.has(w.text.toLowerCase())) {
+          span.classList.add('high');
+          span.style.background = 'var(--high-bg)';
+          span.style.color = 'var(--high)';
+          span.style.borderRadius = '3px';
+          span.style.padding = '0 0.1em';
+        }
+        unit.appendChild(span);
+        const bar = document.createElement('span');
+        bar.className = 'conf-bar';
+        bar.style.opacity = String(Math.max(0.15, Number(w.confidence) || 0));
+        bar.style.height = `${3 + Math.round((Number(w.confidence) || 0) * 6)}px`;
+        unit.appendChild(bar);
+        wrap.appendChild(unit);
+      }
+      verbatimEl.innerHTML = '';
+      verbatimEl.appendChild(wrap);
+    }
+
+    function highlightVerbatimPlain(text, findings) {
+      let html = escapeHtml(text);
+      for (const f of findings || []) {
+        if (f.direction !== 'dropped' || !f.token || f.token.startsWith('[')) continue;
+        const re = new RegExp(`\\b(${escapeRegExp(f.token)})\\b`, 'i');
+        html = html.replace(re, '<mark class="high linked" data-vhit>$1</mark>');
+      }
+      return html;
+    }
+
+    function wireLinkedHighlights(findings) {
+      const items = findingsEl.querySelectorAll('li');
+      items.forEach((li) => {
+        const idx = Number(li.dataset.findingIndex);
+        const enter = () => setLinkedFinding(idx, findings);
+        const leave = () => clearLinkedFinding();
+        li.addEventListener('mouseenter', enter);
+        li.addEventListener('focus', enter);
+        li.addEventListener('mouseleave', leave);
+        li.addEventListener('blur', leave);
+      });
+      rewriteEl.querySelectorAll('mark').forEach((mark) => {
+        mark.addEventListener('mouseenter', () => mark.classList.add('linked'));
+        mark.addEventListener('mouseleave', () => mark.classList.remove('linked'));
+      });
+    }
+
+    function setLinkedFinding(idx, findings) {
+      clearLinkedFinding();
+      const f = findings[idx];
+      if (!f) return;
+      if (f.rewriteCharStart != null && f.rewriteCharEnd != null) {
+        rewriteEl.querySelectorAll('mark').forEach((m) => m.classList.remove('linked'));
+      }
+      if (f.token && !f.token.startsWith('[')) {
+        const re = new RegExp(`\\b${escapeRegExp(f.token)}\\b`, 'i');
+        verbatimEl.querySelectorAll('.word-hit, mark').forEach((el) => {
+          if (re.test(el.textContent)) el.classList.add('linked');
+        });
+        rewriteEl.querySelectorAll('mark').forEach((el) => {
+          if (re.test(el.textContent)) el.classList.add('linked');
+        });
+      }
+    }
+
+    function clearLinkedFinding() {
+      verbatimEl.querySelectorAll('.linked').forEach((el) => el.classList.remove('linked'));
+      rewriteEl.querySelectorAll('.linked').forEach((el) => el.classList.remove('linked'));
     }
 
     function formatConf(n) {
@@ -759,14 +1178,42 @@
 
     function highlightRewrite(text, findings) {
       if (!findings || !findings.length) return escapeHtml(text);
-      let html = escapeHtml(text);
-      const inserted = findings.filter((f) => f.direction === 'inserted');
-      for (const f of inserted) {
-        if (!f.token || f.token.startsWith('[')) continue;
-        const re = new RegExp(`\\b(${escapeRegExp(f.token)})\\b`, 'ig');
-        const cls = f.kind === 'entity' ? 'medium' : 'high';
-        html = html.replace(re, `<mark class="${cls}">$1</mark>`);
+      const spans = [];
+      for (let i = 0; i < findings.length; i++) {
+        const f = findings[i];
+        if (f.rewriteCharStart != null && f.rewriteCharEnd != null) {
+          spans.push({
+            start: f.rewriteCharStart,
+            end: f.rewriteCharEnd,
+            cls: f.kind === 'entity' ? 'medium' : 'high',
+            idx: i,
+          });
+        }
       }
+      for (const f of findings) {
+        if (f.direction !== 'inserted' || !f.token || f.token.startsWith('[')) continue;
+        if (f.rewriteCharStart != null) continue;
+        const re = new RegExp(`\\b${escapeRegExp(f.token)}\\b`, 'i');
+        const m = re.exec(text);
+        if (m) {
+          spans.push({
+            start: m.index,
+            end: m.index + m[0].length,
+            cls: f.kind === 'entity' ? 'medium' : 'high',
+            idx: findings.indexOf(f),
+          });
+        }
+      }
+      spans.sort((a, b) => a.start - b.start);
+      let html = '';
+      let cursor = 0;
+      for (const s of spans) {
+        if (s.start < cursor) continue;
+        html += escapeHtml(text.slice(cursor, s.start));
+        html += `<mark class="${s.cls}" data-fidx="${s.idx}">${escapeHtml(text.slice(s.start, s.end))}</mark>`;
+        cursor = s.end;
+      }
+      html += escapeHtml(text.slice(cursor));
       const dropped = findings.filter(
         (f) => f.direction === 'dropped' && f.token && !f.token.startsWith('['),
       );

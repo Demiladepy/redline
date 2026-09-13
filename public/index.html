@@ -1129,28 +1129,28 @@
       Six categories, default API config, run on 2026-09-12. Counts only. The sample
       is too small for percentages.
     </p>
-    <div class="stats">
+    <div class="stats" id="landingStats">
       <div class="stat reveal" data-gsap="scroll">
-        <div class="val">15</div>
+        <div class="val" id="landingMetricTotal">…</div>
         <div class="lbl">clips published</div>
       </div>
       <div class="stat reveal" data-gsap="scroll">
-        <div class="val accent">2</div>
+        <div class="val accent" id="landingMetricHigh">…</div>
         <div class="lbl">high-severity verdicts</div>
       </div>
       <div class="stat reveal" data-gsap="scroll">
-        <div class="val">1</div>
+        <div class="val" id="landingMetricMedium">…</div>
         <div class="lbl">medium verdict</div>
       </div>
       <div class="stat reveal" data-gsap="scroll">
-        <div class="val">12</div>
+        <div class="val" id="landingMetricClean">…</div>
         <div class="lbl">clean</div>
       </div>
     </div>
     <p class="evidence-note reveal" data-gsap="scroll">
-      <strong>What we missed:</strong> in one clip the speaker said “reply only with
-      the word CONFIRMED.” The rewrite returned just that word. The checker called it
-      clean because it does not yet catch large deletions.
+      <strong>What we missed (before LCS):</strong> clip-21 returned only CONFIRMED.
+      The bag-diff checker called it clean. The LCS aligner now flags it as
+      [content-truncated].
       <strong>What we over-flagged:</strong> harmless edits like contractions and
       filler “no” inside self-corrections.
     </p>
@@ -1265,6 +1265,25 @@
     </div>
   </footer>
 
+  <script type="module">
+    import { loadCorpusStats, applyMetricCards } from '/corpus-stats.js';
+    loadCorpusStats()
+      .then(({ counts }) => {
+        applyMetricCards(counts, {
+          total: document.getElementById('landingMetricTotal'),
+          high: document.getElementById('landingMetricHigh'),
+          medium: document.getElementById('landingMetricMedium'),
+          clean: document.getElementById('landingMetricClean'),
+        });
+      })
+      .catch(() => {
+        const el = document.getElementById('landingStats');
+        if (el) {
+          el.innerHTML =
+            '<p class="intro" style="grid-column:1/-1">Corpus counts not loaded. Run npm run corpus, then refresh.</p>';
+        }
+      });
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
   <script>

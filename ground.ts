@@ -19,6 +19,10 @@ export type Finding = {
   direction: FindingDirection;
   kind: FindingKind;
   token: string;
+  verbatimIndex?: number;
+  rewriteIndex?: number;
+  rewriteCharStart?: number;
+  rewriteCharEnd?: number;
 };
 
 export type GroundResult = {
@@ -44,6 +48,17 @@ type NormToken = string | string[];
 /** STT confidence below this → treat dropped token as likely mishearing. */
 export const WORD_CONFIDENCE_THRESHOLD = 0.5;
 
+/** Rendered in UI; keep in sync with comment block below. */
+export const KNOWN_LIMITS: string[] = [
+  'Unit abbreviation swaps not in UNIT_ALIASES may flag as entities (e.g. tbsp vs tablespoon).',
+  'Domain jargon spelled differently between STT and rewrite can flag as an inserted entity.',
+  'Contraction normalisation (Im → I am) can flag an inserted entity on the expanded token (corpus clip-12).',
+  'The English word one (as in the green one) is treated as number 1 and can false-positive when a rewrite drops the filler noun (corpus clip-18).',
+  'A stammer or repeated clause that repeats a NEGATIVE_PREDICATES word (e.g. failed) can inflate polarity vs a cleaned single pass (corpus clip-19).',
+  'Discourse no inside a self-correction (Tuesday - no, Wednesday) can flag a dropped negation when the final intent is unchanged (corpus clip-16).',
+  'Large rewrite truncation is summarised as [content-truncated]; individual dropped instruction words are not listed separately.',
+];
+
 const FILLERS = new Set([
   'uh',
   'um',
@@ -66,6 +81,23 @@ const FILLERS = new Set([
 ]);
 
 const FILLER_PHRASES: string[][] = [['you', 'know']];
+
+const CONTRACTION_EXPANSIONS = new Map<string, string[]>([
+  ["don't", ['do', 'not']],
+  ["doesn't", ['does', 'not']],
+  ["didn't", ['did', 'not']],
+  ["isn't", ['is', 'not']],
+  ["aren't", ['are', 'not']],
+  ["wasn't", ['was', 'not']],
+  ["weren't", ['were', 'not']],
+  ["won't", ['will', 'not']],
+  ["shouldn't", ['should', 'not']],
+  ["couldn't", ['could', 'not']],
+  ["wouldn't", ['would', 'not']],
+  ["hasn't", ['has', 'not']],
+  ["haven't", ['have', 'not']],
+  ["can't", ['cannot']],
+]);
 
 const NEGATIONS = new Set([
   'not',
@@ -267,22 +299,38 @@ export function ground(
     return { verdict: { level: 'none' }, findings: [] };
   }
 
-  const left = prepare(String(verbatim ?? ''));
-  const right = prepare(String(rewrite));
+  const rewriteStr = String(rewrite);
+  const left = prepareFlat(String(verbatim ?? ''));
+  const right = prepareFlat(rewriteStr);
 
-  const findings: Finding[] = [];
-  findings.push(...diffNegations(left, right));
-  findings.push(...diffNumbers(left, right));
-  findings.push(...diffEntities(left, right));
+  const { leftMatched, rightMatched } = lcsAlign(left, right);
+  let findings = diffFromAlignment(left, right, leftMatched, rightMatched);
+
+  const largeDeletion = detectLargeDeletion(left, right, leftMatched);
+  if (largeDeletion) {
+    findings = findings.filter(
+      (f) => f.direction !== 'dropped' || f.kind === 'negation' || f.kind === 'number',
+    );
+    findings.push(largeDeletion);
+  }
+
+  if (
+    !findings.some((f) => f.kind === 'negation') &&
+    polarityCount(left) !== polarityCount(right)
+  ) {
+    findings.push({
+      direction: polarityCount(left) > polarityCount(right) ? 'dropped' : 'inserted',
+      kind: 'negation',
+      token: '[polarity]',
+    });
+  }
+
+  attachRewriteCharSpans(findings, rewriteStr);
 
   const level = verdictLevel(findings);
   return { verdict: { level }, findings };
 }
 
-/**
- * For each dropped finding, attach a cause from per-word STT confidence.
- * Does not change verdict severity (R9).
- */
 /** Map internal finding kind to AssemblyAI S1 reporting category. */
 export function findingCategory(f: Finding): FindingCategory {
   if (f.kind === 'negation') return 'negation';
@@ -338,11 +386,41 @@ function normalizeWordKey(text: string): string {
     .replace(/^'+|'+$/g, '');
 }
 
-function prepare(text: string): NormToken[] {
+function prepareFlat(text: string): string[] {
   const raw = tokenize(text);
   const collapsed = collapseStammers(raw);
   const withoutFillers = stripFillers(collapsed);
-  return withoutFillers.map(normalizeToken);
+  const normed = withoutFillers.flatMap((t) => {
+    const n = normalizeToken(t);
+    return flattenNorm(n);
+  });
+  return collapseCompoundNumbers(normed);
+}
+
+function collapseCompoundNumbers(tokens: string[]): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (!String(t).startsWith('num:')) {
+      out.push(t);
+      continue;
+    }
+    let v = Number(String(t).slice(4));
+    if (i + 1 < tokens.length && String(tokens[i + 1]).startsWith('num:')) {
+      const next = Number(String(tokens[i + 1]).slice(4));
+      if (next === 1000 || next === 1_000_000 || next === 1_000_000_000) {
+        v = v * next;
+        i += 1;
+      }
+    }
+    out.push(`num:${v}`);
+  }
+  return out;
+}
+
+function flattenNorm(token: NormToken): string[] {
+  if (Array.isArray(token)) return token.flatMap((t) => flattenNorm(t));
+  return [token];
 }
 
 function tokenize(text: string): string[] {
@@ -387,6 +465,14 @@ function stripFillers(tokens: string[]): string[] {
 
 function normalizeToken(token: string): NormToken {
   const t = token.toLowerCase();
+  const expanded = CONTRACTION_EXPANSIONS.get(t);
+  if (expanded) {
+    return expanded.map((part) => normalizeSingleToken(part));
+  }
+  return normalizeSingleToken(t);
+}
+
+function normalizeSingleToken(t: string): NormToken {
   if (UNIT_ALIASES.has(t)) return UNIT_ALIASES.get(t)!;
   if (NUMBER_WORDS.has(t)) return `num:${NUMBER_WORDS.get(t)}`;
   const compact = t.replace(/,/g, '');
@@ -399,125 +485,200 @@ function normalizeToken(token: string): NormToken {
   return t;
 }
 
-function flatten(tokens: NormToken[]): string[] {
-  const out: string[] = [];
-  for (const t of tokens) {
-    if (Array.isArray(t)) out.push(...t);
-    else out.push(t);
+function lcsAlign(
+  left: string[],
+  right: string[],
+): { leftMatched: boolean[]; rightMatched: boolean[] } {
+  const m = left.length;
+  const n = right.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (left[i - 1] === right[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
   }
-  return out;
+
+  const leftMatched = Array(m).fill(false);
+  const rightMatched = Array(n).fill(false);
+  let i = m;
+  let j = n;
+  while (i > 0 && j > 0) {
+    if (left[i - 1] === right[j - 1]) {
+      leftMatched[i - 1] = true;
+      rightMatched[j - 1] = true;
+      i -= 1;
+      j -= 1;
+    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+      i -= 1;
+    } else {
+      j -= 1;
+    }
+  }
+
+  return { leftMatched, rightMatched };
 }
 
-function polarityCount(tokens: NormToken[]): number {
-  let n = 0;
-  for (const t of flatten(tokens)) {
-    if (t === "n't" || NEGATIONS.has(t)) n += 1;
-    else if (NEGATIVE_PREDICATES.has(t)) n += 1;
-  }
-  return n;
-}
-
-function diffNegations(left: NormToken[], right: NormToken[]): Finding[] {
+function diffFromAlignment(
+  left: string[],
+  right: string[],
+  leftMatched: boolean[],
+  rightMatched: boolean[],
+): Finding[] {
   const findings: Finding[] = [];
-  const leftBag = negationBag(left);
-  const rightBag = negationBag(right);
+  const leftSet = new Set(left);
 
-  for (const [token, count] of leftBag) {
-    const r = rightBag.get(token) ?? 0;
-    for (let i = 0; i < count - r; i++) {
-      findings.push({ direction: 'dropped', kind: 'negation', token });
-    }
-  }
-  for (const [token, count] of rightBag) {
-    const l = leftBag.get(token) ?? 0;
-    for (let i = 0; i < count - l; i++) {
-      findings.push({ direction: 'inserted', kind: 'negation', token });
-    }
-  }
-
-  if (findings.length === 0 && polarityCount(left) !== polarityCount(right)) {
+  for (let i = 0; i < left.length; i++) {
+    if (leftMatched[i]) continue;
+    const token = left[i];
+    const display = displayToken(token);
+    const kind = classifyToken(token, 'dropped');
+    if (!kind) continue;
     findings.push({
-      direction: polarityCount(left) > polarityCount(right) ? 'dropped' : 'inserted',
-      kind: 'negation',
-      token: '[polarity]',
+      direction: 'dropped',
+      kind,
+      token: display,
+      verbatimIndex: i,
+    });
+  }
+
+  for (let j = 0; j < right.length; j++) {
+    if (rightMatched[j]) continue;
+    const token = right[j];
+    const display = displayToken(token);
+    const kind = classifyToken(token, 'inserted');
+    if (!kind) continue;
+    if (kind === 'entity' && leftSet.has(token)) continue;
+    findings.push({
+      direction: 'inserted',
+      kind,
+      token: display,
+      rewriteIndex: j,
     });
   }
 
   return findings;
 }
 
-function negationBag(tokens: NormToken[]): Map<string, number> {
-  const m = new Map<string, number>();
-  for (const t of flatten(tokens)) {
-    if (t === "n't" || NEGATIONS.has(t)) {
-      const key = t === "n't" ? 'not' : t;
-      m.set(key, (m.get(key) ?? 0) + 1);
-    }
+function classifyToken(
+  token: string,
+  direction: FindingDirection,
+): FindingKind | null {
+  if (isNegationToken(token)) return 'negation';
+  if (String(token).startsWith('num:')) return 'number';
+  if (direction === 'inserted') {
+    if (STOPWORDS.has(token)) return null;
+    if (FILLERS.has(token)) return null;
+    if (UNIT_ALIASES.has(token)) return null;
+    return 'entity';
   }
-  return m;
+  return null;
 }
 
-function diffNumbers(left: NormToken[], right: NormToken[]): Finding[] {
-  const findings: Finding[] = [];
-  const l = numberBag(left);
-  const r = numberBag(right);
-
-  for (const [token, count] of l) {
-    const rc = r.get(token) ?? 0;
-    for (let i = 0; i < count - rc; i++) {
-      findings.push({ direction: 'dropped', kind: 'number', token });
-    }
-  }
-  for (const [token, count] of r) {
-    const lc = l.get(token) ?? 0;
-    for (let i = 0; i < count - lc; i++) {
-      findings.push({ direction: 'inserted', kind: 'number', token });
-    }
-  }
-  return findings;
+function isNegationToken(token: string): boolean {
+  if (token === "n't" || NEGATIONS.has(token)) return true;
+  if (NEGATIVE_PREDICATES.has(token)) return true;
+  return false;
 }
 
-function numberBag(tokens: NormToken[]): Map<string, number> {
-  const m = new Map<string, number>();
-  const flat = flatten(tokens);
-  const values: string[] = [];
-  for (let i = 0; i < flat.length; i++) {
-    const t = flat[i];
-    if (!String(t).startsWith('num:')) continue;
-    let v = Number(String(t).slice(4));
-    if (i + 1 < flat.length && String(flat[i + 1]).startsWith('num:')) {
-      const next = Number(String(flat[i + 1]).slice(4));
-      if (next === 1000 || next === 1_000_000 || next === 1_000_000_000) {
-        v = v * next;
-        i += 1;
+function displayToken(token: string): string {
+  if (String(token).startsWith('num:')) return String(token).slice(4);
+  return token;
+}
+
+function isContentToken(token: string): boolean {
+  if (String(token).startsWith('num:')) return true;
+  if (STOPWORDS.has(token)) return false;
+  if (FILLERS.has(token)) return false;
+  if (UNIT_ALIASES.has(token)) return false;
+  return true;
+}
+
+function detectLargeDeletion(
+  left: string[],
+  right: string[],
+  leftMatched: boolean[],
+): Finding | null {
+  if (right.length > 3) return null;
+
+  const contentLeft = left.filter((t) => isContentToken(t));
+  if (contentLeft.length < 6) return null;
+
+  const unmatchedContent = left.filter((t, i) => !leftMatched[i] && isContentToken(t));
+  if (unmatchedContent.length < 6) return null;
+  if (unmatchedContent.length < contentLeft.length * 0.55) return null;
+
+  const firstUnmatched = left.findIndex((_, i) => !leftMatched[i]);
+  return {
+    direction: 'dropped',
+    kind: 'entity',
+    token: '[content-truncated]',
+    verbatimIndex: firstUnmatched >= 0 ? firstUnmatched : 0,
+  };
+}
+
+function polarityCount(tokens: string[]): number {
+  let n = 0;
+  for (const t of tokens) {
+    if (isNegationToken(t)) n += 1;
+  }
+  return n;
+}
+
+function attachRewriteCharSpans(findings: Finding[], rewrite: string): void {
+  const tokens = prepareFlat(rewrite);
+  const spans = tokenCharSpans(rewrite, tokens);
+
+  for (const f of findings) {
+    if (f.rewriteIndex == null || f.rewriteIndex < 0 || f.rewriteIndex >= spans.length) {
+      continue;
+    }
+    const span = spans[f.rewriteIndex];
+    if (span) {
+      f.rewriteCharStart = span.start;
+      f.rewriteCharEnd = span.end;
+    }
+  }
+}
+
+function tokenCharSpans(text: string, normTokens: string[]): { start: number; end: number }[] {
+  const raw = tokenize(text);
+  const collapsed = collapseStammers(raw);
+  const withoutFillers = stripFillers(collapsed);
+  const spans: { start: number; end: number }[] = [];
+  const lower = text.toLowerCase();
+  let cursor = 0;
+
+  for (const rawTok of withoutFillers) {
+    const idx = lower.indexOf(rawTok.toLowerCase(), cursor);
+    if (idx < 0) continue;
+    const start = idx;
+    const end = idx + rawTok.length;
+    cursor = end;
+
+    const expanded = CONTRACTION_EXPANSIONS.get(rawTok.toLowerCase());
+    const parts = expanded ?? [rawTok.toLowerCase()];
+    const normParts = parts.flatMap((p) => flattenNorm(normalizeSingleToken(p)));
+    for (const _ of normParts) {
+      if (spans.length < normTokens.length) {
+        spans.push({ start, end });
       }
     }
-    values.push(String(v));
   }
-  for (const v of values) {
-    m.set(v, (m.get(v) ?? 0) + 1);
-  }
-  return m;
-}
 
-function diffEntities(left: NormToken[], right: NormToken[]): Finding[] {
-  const findings: Finding[] = [];
-  const leftSet = new Set(flatten(left).filter((t) => !String(t).startsWith('num:')));
-  const rightTokens = flatten(right).filter((t) => !String(t).startsWith('num:'));
-
-  for (const t of rightTokens) {
-    if (leftSet.has(t)) continue;
-    if (STOPWORDS.has(t)) continue;
-    if (FILLERS.has(t)) continue;
-    if (NEGATIONS.has(t)) continue;
-    if (NEGATIVE_PREDICATES.has(t)) continue;
-    if (UNIT_ALIASES.has(t)) continue;
-    findings.push({ direction: 'inserted', kind: 'entity', token: t });
+  while (spans.length < normTokens.length) {
+    spans.push({ start: 0, end: text.length });
   }
-  return findings;
+
+  return spans;
 }
 
 function verdictLevel(findings: Finding[]): VerdictLevel {
+  if (findings.some((f) => f.token === '[content-truncated]')) return 'high';
   if (findings.some((f) => f.kind === 'negation' || f.kind === 'number')) {
     return 'high';
   }
@@ -536,9 +697,7 @@ function verdictLevel(findings: Finding[]): VerdictLevel {
  *   (e.g. "tbsp" vs "tablespoon") until listed.
  * - Domain jargon that looks like a proper noun can flag as an inserted entity
  *   when the STT spelling differs from the rewrite spelling.
- * - Contractions split unevenly ("cannot" vs "can't") can under-count negation
- *   if a form is missing from NEGATIONS.
- * - Contraction normalisation ("Im" -> "I'm") can flag an inserted entity on
+ * - Contraction normalisation (Im -> I'm) can flag an inserted entity on
  *   the expanded token (corpus clip-12).
  * - The English word "one" (as in "the green one") is treated as number 1 and
  *   can false-positive when a rewrite drops the filler noun (corpus clip-18).
@@ -547,4 +706,6 @@ function verdictLevel(findings: Finding[]): VerdictLevel {
  *   (corpus clip-19).
  * - Discourse "no" inside a self-correction ("Tuesday - no, Wednesday") can
  *   flag a dropped negation when the final intent is unchanged (corpus clip-16).
+ * - Large rewrite truncation is summarised as [content-truncated]; individual
+ *   dropped instruction words are not listed separately.
  */

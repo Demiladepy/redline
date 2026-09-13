@@ -43,3 +43,9 @@ Short notes from building Redline against the Dictation API.
 **Expected:** spoken commands kept as speech (fenced / not executed).  
 **Happened:** on corpus clip-21, verbatim was an instruction to reply only with `CONFIRMED`; `llm_response` was exactly `CONFIRMED`. Clips 20 and 22 kept the command as speech.  
 **Where:** corpus run 2026-09-12, `corpus-results.json` entry `clip-21.wav`.
+
+## PRD file name in hackathon brief
+
+**Expected:** a `PRD.md` in the repo matching the hackathon brief.  
+**Happened:** this repository uses `RESULTS.md`, `IMPLEMENTATION_PLAN.md`, and `SOURCES.md` instead; no `PRD.md` file on disk.  
+**Where:** submission docs vs workspace layout.

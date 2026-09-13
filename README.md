@@ -138,7 +138,7 @@ Browser capture uses `AudioWorklet` → `Int16Array` PCM, not `MediaRecorder` (W
 
 ## Limitations
 
-- **Alignment algorithm.** The PRD describes longest-common-subsequence alignment. The shipped checker uses token-bag diff after normalisation. It catches negation, number, and inserted-entity drift on the demo path but does not flag large deletions (see clip-21 in [`RESULTS.md`](RESULTS.md)). A full LCS aligner would need new tests and corpus re-validation; it was deferred to protect submission stability.
+- **Alignment algorithm.** The checker uses longest-common-subsequence alignment over normalised tokens, with a `[content-truncated]` summary when a rewrite collapses most of the verbatim. False positives on discourse `no` and contraction normalisation remain documented in `ground.ts` and the workspace UI.
 - **Entity taxonomy.** S1 categories are applied via a reporting layer (`findingCategory`), not separate detectors. Domain vs name split is heuristic; corpus counts in RESULTS still use internal kinds.
 
 ---
