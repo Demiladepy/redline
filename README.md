@@ -1,124 +1,146 @@
-# Redline
+<p align="center">
+  <img src="docs/readme/logo.png" alt="Redline logo" width="96" height="96" />
+</p>
 
-> The cleanup can change what you said. Redline compares the Dictation API's verbatim transcript to its rewrite and shows you where they diverge.
+<h1 align="center">Redline</h1>
 
-Say *"Patient is not allergic to penicillin."* An app that pastes only the cleaned text can drop **not** and still receive HTTP `200` with `llm_error: null`. Redline surfaces both strings, runs a deterministic check, and marks drift before you copy.
+<p align="center">
+  <strong>See when Dictation cleanup changes meaning</strong>
+</p>
 
-Built for [AssemblyAI Hack into Dictation](https://www.assemblyai.com/) (September 2026).
+<p align="center">
+  <img src="docs/readme/tagline.svg" alt="The cleanup can change what you said. Redline shows you when it does." width="880" />
+</p>
 
-Redline is a measurement instrument for dictation pipelines, not a competing dictation app. It extends an argument AssemblyAI has made in public — that aggregate word error rate is a poor predictor of whether speech input actually works, that the tokens that carry the transaction (names, amounts, dates, dosages) matter most, and that the honest way to evaluate a system is to run your own audio and count misses by hand rather than accept a vendor average. Every published figure on that argument measures the recognition layer. The Dictation API adds a second layer: an LLM rewrite of the transcript. Redline runs the same method on that layer. Design references and paraphrased sources: [`SOURCES.md`](SOURCES.md).
+<p align="center">
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-%3E%3D22.6-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node 22.6+" /></a>
+  <a href="package.json"><img src="https://img.shields.io/badge/deps-zero-0ea5e9?style=flat-square" alt="Zero runtime dependencies" /></a>
+  <a href="test/ground.test.ts"><img src="https://img.shields.io/badge/tests-20%20passing-22c55e?style=flat-square" alt="20 tests passing" /></a>
+  <a href="https://www.assemblyai.com/"><img src="https://img.shields.io/badge/hackathon-Hack%20into%20Dictation-4ea1ff?style=flat-square" alt="AssemblyAI Hack into Dictation" /></a>
+  <img src="https://img.shields.io/badge/verifier-deterministic-111827?style=flat-square" alt="Deterministic verifier" />
+</p>
+
+<p align="center">
+  Built for <a href="https://www.assemblyai.com/">AssemblyAI Hack into Dictation</a> · September 2026 · Demilade Ayeku
+</p>
 
 ---
 
-## Overview
+## What it does
 
-The [Dictation API](https://dictation.assemblyai.com/) returns two strings from one recording:
+Say *"Patient is not allergic to penicillin."* An app that pastes only the cleaned text can drop **not** and still receive HTTP `200` with `llm_error: null`.
 
-| Field | Description |
+Redline compares the Dictation API pair (`text` vs `llm_response`), runs a **deterministic** checker (no second model), and marks every span in the rewrite that does not trace back to the verbatim.
+
+<p align="center">
+  <img src="docs/readme/redline-align.svg" alt="Animated diagram: verbatim keeps not, rewrite drops it, high verdict" width="880" />
+</p>
+
+The web UI is a demo shell. The submission is the checker, the corpus evidence, and documented limits.
+
+---
+
+## Demo
+
+| Landing | Audit workspace (sample loaded) |
+| :---: | :---: |
+| <img src="docs/readme/landing.png" alt="Redline landing page" width="420" /> | <img src="docs/readme/workspace.png" alt="Audit workspace with high verdict sample" width="420" /> |
+
+| URL | Purpose |
 | --- | --- |
-| `text` | Verbatim transcript. The API guarantees this field is not altered by the rewrite. |
-| `llm_response` | LLM cleanup of that transcript, or `null` if the rewrite timed out or failed. |
+| http://localhost:8787 | Landing page |
+| http://localhost:8787/app.html | Audit workspace |
+| http://localhost:8787/app.html?sample=1 | Offline sample (no API call) |
 
-Most dictation UIs show only `llm_response`. Redline is a measurement layer on top: it aligns the two fields, classifies mismatches, and assigns a verdict. The web UI is a demo shell; the submission is the checker, corpus evidence, and documented limits.
+---
 
-AssemblyAI's push-to-talk guidance draws a line between speech recognition and a cleanup pass: the verbatim transcript is what was said; the rewrite is often what you wanted on screen — and whether to show the second is a product decision worth making deliberately, not by default. Redline is the check for that decision: it compares the two strings the API already returns and flags tokens that do not trace back.
+## Architecture
+
+```mermaid
+flowchart LR
+  mic[Mic / Paste / Sample] --> api[Dictation API]
+  api --> text["text verbatim"]
+  api --> llm["llm_response"]
+  text --> ground[ground LCS checker]
+  llm --> ground
+  ground --> verdict[Verdict + findings]
+  verdict --> ui[Audit workspace]
+```
 
 | Component | Role |
 | --- | --- |
-| Checker | Deterministic aligner (`ground.ts`). No second model call. Small on purpose — under a few hundred lines, no dependencies, no build step — so a verdict can be checked rather than trusted. |
-| Demo app | Record, paste, or load a sample case. Verdict-first UI with copy guard. |
-| Corpus | 15 clips across six categories, default API config, run 2026-09-12. |
-| Results writeup | Method, quoted drift cases, false positives, and one miss. See [`RESULTS.md`](RESULTS.md). |
-| API feedback | Docs and SDK mismatches found while building. See [`FEEDBACK.md`](FEEDBACK.md). |
-| Sources | Why each design choice traces to AssemblyAI's own posts. See [`SOURCES.md`](SOURCES.md). |
+| Checker | LCS aligner in `ground.ts` / `public/ground.js`. No network. No LLM. |
+| Demo app | Record, paste, or load a sample. Verdict first, then side-by-side proof. |
+| Corpus | 15 clips, six categories, default `config={}`. |
+| Results | Method, false positives, misses: [`RESULTS.md`](RESULTS.md) |
+| Feedback | Docs/SDK mismatches: [`FEEDBACK.md`](FEEDBACK.md) |
+| Sources | Design choices traced to AssemblyAI posts: [`SOURCES.md`](SOURCES.md) |
 
 ---
 
 ## Quickstart
 
-**Requirements:** Node.js 22.6 or later. No `npm install` (zero runtime dependencies).
-
-1. Set your Dictation API key:
+**Requirements:** Node.js 22.6+. No `npm install` (zero runtime dependencies).
 
 ```bash
+# 1. API key (Record path only; sample + paste work without it)
 export AAI_API_KEY=your_key_here
-```
+# or put AAI_API_KEY=... in a root .env file (do not commit it)
 
-You can also place `AAI_API_KEY=...` in a `.env` file at the project root. The server reads it on startup. Do not commit the key.
-
-2. Start the server:
-
-```bash
+# 2. Start
 npm start
+
+# 3. Open http://localhost:8787
 ```
 
-3. Open the app:
-
-| URL | Purpose |
-| --- | --- |
-| http://localhost:8787 | Landing page |
-| http://localhost:8787/app.html | Dictation workspace |
-| http://localhost:8787/app.html?sample=1 | Offline sample (no API call) |
-
-**Other commands:**
-
 ```bash
-npm test                 # checker unit tests (16 cases)
-npm run corpus           # batch-run fixtures against the live API
-npm run measure-warm     # R11 cold vs warmed latency (needs AAI_API_KEY)
-npm run keyterms-experiment  # S2 keyterms overcorrection probe (needs AAI_API_KEY)
-bash scripts/spike.sh    # single-clip curl spike (needs AAI_API_KEY)
+npm test                 # 20 checker unit tests
+npm run corpus           # batch fixtures against the live API
+npm run measure-warm     # cold vs warmed latency
+npm run keyterms-experiment
 ```
 
 ---
 
-## How the checker works
+## Checker
 
-`ground()` tokenizes the verbatim and rewrite, aligns them, and emits findings when a span in the rewrite does not trace back to the verbatim (or vice versa).
+`ground()` normalises tokens (fillers, stammers, contractions, numbers), aligns with longest-common-subsequence, and emits findings when a span does not match.
 
-| Internal kind | S1 reporting category | Examples |
+| Internal kind | S1 reporting label | Examples |
 | --- | --- | --- |
-| Negation | negation | Dropped or inserted `not`, `never`, polarity flips |
-| Number | alphanumeric string | `twenty` vs `20`, changed amounts or dosages |
-| Entity | proper noun or name / domain terminology | Names invented in the rewrite; tech jargon via suffix/heuristic |
+| Negation | negation | Dropped/inserted `not`, polarity flips |
+| Number | alphanumeric string | `twenty` vs `50,000` |
+| Entity | proper noun or name / domain terminology | Invented names; jargon heuristics |
 
-Detection still uses the three internal kinds for severity. `findingCategory()` maps findings to AssemblyAI's entity taxonomy for display (see S1 in [`SOURCES.md`](SOURCES.md)).
+Verdicts: `none` · `clean` · `medium` · `high`
 
-Verdict levels: `none` (no rewrite), `clean`, `medium`, `high`.
+Dropped tokens can be tagged as likely **mishearing** or **rewrite** from API `words[]` confidence (threshold `0.5`). Display only; severity unchanged.
 
-Dropped tokens can be annotated as likely **mishearing** or **rewrite** using per-word STT confidence from the API `words` array (threshold `0.5`). This is display-only; it does not change severity.
-
-**Known false positives** (full list at the bottom of `ground.ts`):
+**Known limits** (also rendered in the workspace from `KNOWN_LIMITS`):
 
 - Contraction normalisation (`Im` → `I'm`)
-- English *one* treated as the number `1` (e.g. "the green one")
-- Discourse `no` inside a self-correction where final intent is preserved
-- Repeated negative predicates from stammers inflating polarity count
+- English *one* treated as number `1`
+- Discourse `no` inside self-corrections
+- Large truncations summarised as `[content-truncated]`
 
 ---
 
 ## Corpus headline
 
-15 clips published for submission (selected from a 25-clip recording set). Default config `{}`, no `llm_instruction`. Raw counts only; the sample is too small for percentages.
+Counts derived from [`corpus-results-15.json`](corpus-results-15.json) (re-grounded after LCS). Raw counts only; sample is too small for percentages.
 
 | Verdict | Count |
 | --- | ---: |
-| High | 2 |
+| High | 3 |
 | Medium | 1 |
-| Clean | 12 |
+| Clean | 11 |
+| **Total** | **15** |
 
-Notable outcomes:
-
-- **Miss:** one spoken-command clip collapsed to `CONFIRMED` while the checker returned clean.
-- **False positives:** contractions and self-correction discourse on otherwise correct rewrites.
-
-Category breakdown and quoted cases: [`RESULTS.md`](RESULTS.md).
+Quoted cases and false positives: [`RESULTS.md`](RESULTS.md).
 
 ---
 
-## Dictation API reference
-
-Endpoint used by this project:
+## Dictation API
 
 ```
 POST https://dictation.assemblyai.com/v1/transcribe/live
@@ -126,37 +148,47 @@ POST https://dictation.assemblyai.com/v1/transcribe/live
 
 | Topic | Detail |
 | --- | --- |
-| Auth | `Authorization: <RAW_KEY>` (no `Bearer` prefix) |
-| Body | `multipart/form-data`: `config` (JSON) before `audio` |
-| Audio | 16-bit PCM WAV or raw PCM. MP3, WebM, and other compressed formats return `415`. |
-| Clip length | Up to 120 seconds |
-| Invalid key | Documented as `404`; this build also observed `401` on a bad key |
+| Auth | `Authorization: <RAW_KEY>` (no `Bearer`) |
+| Body | `multipart/form-data`: `config` before `audio` |
+| Audio | 16-bit PCM WAV or raw PCM (compressed formats → `415`) |
+| Cap | 120 seconds |
+| Browser | `AudioWorklet` → `Int16Array` (not `MediaRecorder`) |
 
-Browser capture uses `AudioWorklet` → `Int16Array` PCM, not `MediaRecorder` (WebM is rejected upstream).
-
----
-
-## Limitations
-
-- **Alignment algorithm.** The checker uses longest-common-subsequence alignment over normalised tokens, with a `[content-truncated]` summary when a rewrite collapses most of the verbatim. False positives on discourse `no` and contraction normalisation remain documented in `ground.ts` and the workspace UI.
-- **Entity taxonomy.** S1 categories are applied via a reporting layer (`findingCategory`), not separate detectors. Domain vs name split is heuristic; corpus counts in RESULTS still use internal kinds.
+This is the **Dictation** API, not the main transcription SDK surface.
 
 ---
 
 ## References
 
-Full paraphrased traceability: [`SOURCES.md`](SOURCES.md). Internal deliverables: [`RESULTS.md`](RESULTS.md) (corpus), [`FEEDBACK.md`](FEEDBACK.md) (API notes), [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md) (build status).
+Redline is not a guess about what AssemblyAI cares about. It extends arguments from their own posts onto the cleanup layer. Full paraphrase: [`SOURCES.md`](SOURCES.md).
 
-### AssemblyAI published sources
+### Reference screenshots
 
-| ID | Title | Author | Date | URL | What Redline takes |
-| --- | --- | --- | --- | --- | --- |
-| S1 | The voice agent accuracy problem nobody benchmarks | Devon Malloy | 8 Sep 2026 | [assemblyai.com/blog/entity-accuracy-in-speech-to-text](https://www.assemblyai.com/blog/entity-accuracy-in-speech-to-text) | Entity-over-WER argument; run-your-own-audio method; S1 reporting categories for findings |
-| S2 | How to build push-to-talk dictation with the Sync API | Kelsey Foster | 26 Aug 2026 | [assemblyai.com/blog/build-push-to-talk-dictation-sync-api](https://www.assemblyai.com/blog/build-push-to-talk-dictation-sync-api) | Cleanup vs recognition framing; AudioWorklet PCM; connection pre-warming; error handling |
-| S3 | How to add voice-note transcription to your app | Kelsey Foster | 26 Aug 2026 | [assemblyai.com/blog/add-voice-memo-transcription-to-your-app](https://www.assemblyai.com/blog/add-voice-memo-transcription-to-your-app) | Response shape with per-word confidence; WAV/PCM and duration limits |
-| S4 | Why AssemblyAI's Voice Agent API is designed for coding agents | Devon Malloy | 25 Aug 2026 | [assemblyai.com/blog/why-assemblyais-voice-agent-api-is-designed-for-coding-agents](https://www.assemblyai.com/blog/why-assemblyais-voice-agent-api-is-designed-for-coding-agents) | Small deterministic verifier as trust instrument |
-| S5 | Using the Voice Agent API alongside an existing voice stack | Devon Malloy | 8 Sep 2026 | [assemblyai.com/blog/using-the-voice-agent-api-alongside-an-existing-voice-stack](https://www.assemblyai.com/blog/using-the-voice-agent-api-alongside-an-existing-voice-stack) | Transcript errors inherit silently one layer up — same for cleanup LLM |
-| S6 | Inside dictation cleanup: How raw speech becomes finished text | Kelsey Foster | 2 Sep 2026 | [assemblyai.com/blog/dictation-cleanup](https://www.assemblyai.com/blog/dictation-cleanup) | Two-stage pipeline; measurement target is rewrite drift, not recognition WER |
+| S1 · Entity accuracy | S2 · Push-to-talk Sync API |
+| :---: | :---: |
+| <a href="https://www.assemblyai.com/blog/entity-accuracy-in-speech-to-text"><img src="docs/readme/refs/s1-entity-accuracy.png" alt="Screenshot: Entity accuracy in speech-to-text" width="420" /></a> | <a href="https://www.assemblyai.com/blog/build-push-to-talk-dictation-sync-api"><img src="docs/readme/refs/s2-push-to-talk.png" alt="Screenshot: Build push-to-talk dictation" width="420" /></a> |
+
+| S3 · Voice memo transcription | S6 · Dictation cleanup |
+| :---: | :---: |
+| <a href="https://www.assemblyai.com/blog/add-voice-memo-transcription-to-your-app"><img src="docs/readme/refs/s3-voice-memo.png" alt="Screenshot: Voice memo transcription" width="420" /></a> | <a href="https://www.assemblyai.com/blog/dictation-cleanup"><img src="docs/readme/refs/s6-dictation-cleanup.png" alt="Screenshot: Dictation cleanup" width="420" /></a> |
+
+### Source index
+
+| ID | Title | What Redline takes |
+| --- | --- | --- |
+| [S1](https://www.assemblyai.com/blog/entity-accuracy-in-speech-to-text) | Entity accuracy in speech-to-text | Entity-over-WER method; run your own audio; reporting labels |
+| [S2](https://www.assemblyai.com/blog/build-push-to-talk-dictation-sync-api) | Build push-to-talk with Sync API | Cleanup vs recognition; AudioWorklet; pre-warm; errors |
+| [S3](https://www.assemblyai.com/blog/add-voice-memo-transcription-to-your-app) | Voice-note transcription | Response shape; per-word confidence; WAV/PCM limits |
+| [S4](https://www.assemblyai.com/blog/why-assemblyais-voice-agent-api-is-designed-for-coding-agents) | Voice Agent API for coding agents | Small deterministic verifier as trust instrument |
+| [S5](https://www.assemblyai.com/blog/using-the-voice-agent-api-alongside-an-existing-voice-stack) | Voice Agent API alongside a stack | Errors inherit one layer up; same for cleanup LLM |
+| [S6](https://www.assemblyai.com/blog/dictation-cleanup) | Inside dictation cleanup | Two-stage pipeline; measure rewrite drift, not WER |
+
+---
+
+## Limitations
+
+- LCS alignment plus `[content-truncated]` for large collapses; discourse `no` and contraction FPs remain documented.
+- S1 categories are a reporting layer on top of negation / number / entity severity.
 
 ---
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Redline — audit workspace</title>
+  <title>Redline: audit workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
@@ -474,8 +474,8 @@
     <main class="workspace">
       <h1>Audit workspace</h1>
       <p class="lede">
-        This is not a dictation app. It compares the Dictation API pair —
-        <code>text</code> (verbatim) vs <code>llm_response</code> (cleanup) — and
+        This is not a dictation app. It compares the Dictation API pair
+        <code>text</code> (verbatim) vs <code>llm_response</code> (cleanup) and
         shows where they diverge.
       </p>
 
@@ -502,9 +502,9 @@
         <summary>How to read a run</summary>
         <div class="how-body">
           <ol>
-            <li>Verdict first — did meaning possibly change?</li>
-            <li>Rewrite with inline marks — what the cleanup produced.</li>
-            <li>Findings list — each dropped or inserted token with category.</li>
+            <li>Verdict first: did meaning possibly change?</li>
+            <li>Rewrite with inline marks: what the cleanup produced.</li>
+            <li>Findings list: each dropped or inserted token with category.</li>
             <li>Verbatim with confidence bars when the API returns <code>words[]</code>.</li>
           </ol>
         </div>
@@ -530,7 +530,7 @@
       <span class="space-hint" id="spaceHint">Space toggles record when no field is focused</span>
 
       <details class="paste-box" id="pasteBox" hidden>
-        <summary>Paste pair — check any pipeline (no API call)</summary>
+        <summary>Paste pair: check any pipeline (no API call)</summary>
         <p class="paste-help">
           Paste what was said and what the tool produced. The checker runs in the browser only.
         </p>
@@ -557,7 +557,7 @@
         <p>
           Sample pair shown dimmed. Marks mean a token does not trace back.
           <button type="button" id="previewSampleBtn" class="linkish">Load sample</button>
-          — recorded response, no API call.
+          Recorded response, no API call.
         </p>
       </div>
 
@@ -662,7 +662,7 @@
     let copyArmed = false;
     let copiedTimer = null;
 
-    // R4: recorded offline response — no network when this button is used.
+    // R4: recorded offline response; no network when this button is used.
     const MIN_AUDIO_MS = 80;
 
     const SAMPLE = {
@@ -765,7 +765,7 @@
         copyArmed = true;
         const n = highFindingCount;
         const noun = n === 1 ? 'change' : 'changes';
-        copyBtn.textContent = `Copy anyway — ${n} ${noun} can alter meaning`;
+        copyBtn.textContent = `Copy anyway: ${n} ${noun} can alter meaning`;
         copyBtn.classList.add('warn');
         return;
       }
@@ -1075,9 +1075,9 @@
       corpusTableBody.innerHTML = '';
       for (const row of rows) {
         const tr = document.createElement('tr');
-        const cat = manifest[row.file] ?? '—';
+        const cat = manifest[row.file] ?? '-';
         const n = (row.findings || []).length;
-        tr.innerHTML = `<td>${escapeHtml(row.file)}</td><td>${escapeHtml(cat)}</td><td>${escapeHtml(row.verdict ?? '—')}</td><td>${n}</td>`;
+        tr.innerHTML = `<td>${escapeHtml(row.file)}</td><td>${escapeHtml(cat)}</td><td>${escapeHtml(row.verdict ?? '-')}</td><td>${n}</td>`;
         corpusTableBody.appendChild(tr);
       }
       corpusTable.hidden = false;

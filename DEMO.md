@@ -10,7 +10,7 @@ Record this in one take. Open on the flag in the first fifteen seconds.
 | 0:25 | Click **Load sample** (no API key) | "Sample case from a recorded response. No API call." |
 | 0:32 | Verdict + rewrite marks | "High verdict. The rewrite dropped not. Marks are from a deterministic checker, not a second model." |
 | 0:42 | Findings list + verbatim confidence bars | "Each finding names the token. Word confidence comes from the API words array." |
-| 0:50 | Open **Corpus evidence** table | "Every clip, category, verdict — from corpus-results-15.json." |
+| 0:50 | Open **Corpus evidence** table | "Every clip, category, verdict: from corpus-results-15.json." |
 | 0:58 | Scroll to **Known limits** | "We list false positives and truncation behaviour in the UI, same list as in ground.js." |
 | 1:05 | Paste mode: open paste, run a pair | "Paste mode runs the checker in the browser only. No network." |
 | 1:15 | Optional: five-second live record if key is set | "Live path uses AudioWorklet to WAV, same API pair." |

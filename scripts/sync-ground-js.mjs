@@ -61,7 +61,7 @@ body = body
   .replace(/: string/g, '');
 
 const js = `/**
- * Browser parity with ground.ts — run: node scripts/sync-ground-js.mjs
+ * Browser parity with ground.ts. Run: node scripts/sync-ground-js.mjs
  */
 
 ${body}`;

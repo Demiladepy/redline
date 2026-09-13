@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="220" viewBox="0 0 880 220" role="img" aria-labelledby="title desc">
+  <title id="title">Redline: verbatim vs rewrite</title>
+  <desc id="desc">Animated diagram showing a dropped negation between Dictation API text and llm_response.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7fafc"/>
+      <stop offset="100%" stop-color="#eef5fb"/>
+    </linearGradient>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0b1f33" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <rect width="880" height="220" rx="18" fill="url(#bg)"/>
+  <rect x="24" y="28" width="380" height="164" rx="14" fill="#fff" stroke="#d7e2ec" filter="url(#soft)"/>
+  <rect x="476" y="28" width="380" height="164" rx="14" fill="#fff" stroke="#d7e2ec" filter="url(#soft)"/>
+  <text x="44" y="58" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6b7c" letter-spacing="1.5">TEXT (VERBATIM)</text>
+  <text x="496" y="58" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6b7c" letter-spacing="1.5">LLM_RESPONSE</text>
+  <text x="44" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18" fill="#121212">Patient is</text>
+  <text x="148" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#c01510">not</text>
+  <text x="186" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18" fill="#121212">allergic&</text>
+  <text x="496" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18" fill="#121212">Patient is allergic&</text>
+  <rect x="148" y="78" width="34" height="28" rx="4" fill="#fde8e7" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0.35;1" dur="3.2s" repeatCount="indefinite"/>
+  </rect>
+  <text x="148" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#c01510">not</text>
+  <path d="M414 110 H462" stroke="#4ea1ff" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="462,104 476,110 462,116" fill="#4ea1ff">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 4 0; 0 0" dur="1.4s" repeatCount="indefinite"/>
+  </polygon>
+  <g>
+    <rect x="496" y="120" width="220" height="36" rx="8" fill="#fde8e7"/>
+    <text x="510" y="143" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#c01510">HIGH · dropped negation</text>
+    <animate attributeName="opacity" values="0.55;1;0.55" dur="2.4s" repeatCount="indefinite"/>
+  </g>
+  <text x="44" y="168" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6b7c8d">API guarantees this field is never altered</text>
+  <text x="496" y="178" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6b7c8d">Cleanup can still return HTTP 200</text>
+</svg>

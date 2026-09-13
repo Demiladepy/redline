@@ -1,4 +1,4 @@
-/* Shared Redline tokens — landing + app */
+/* Shared Redline tokens: landing + app */
 :root {
   --bg: #f4f6f8;
   --bg-elev: #ffffff;
@@ -77,7 +77,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   height: 2rem;
 }
 
-/* Ninja mascot — 4-frame sprite sheet */
+/* Ninja mascot: 4-frame sprite sheet */
 .ninja {
   display: inline-block;
   width: 2.5rem;
@@ -180,7 +180,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   color: inherit;
 }
 
-/* Language coverage strip (stub — full benchmark in Phase 2) */
+/* Language coverage strip (stub; full benchmark in Phase 2) */
 .lang-strip {
   margin: 0 auto;
   max-width: 52rem;

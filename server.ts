@@ -266,7 +266,7 @@ function mapUpstreamError(
 
   const table: Record<number, ErrorBody> = {
     400: {
-      error: 'The request was malformed — config must precede audio.',
+      error: 'The request was malformed: config must precede audio.',
       hint: 'Check multipart part order.',
     },
     401: {
