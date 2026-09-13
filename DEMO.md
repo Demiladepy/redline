@@ -6,7 +6,7 @@ Record this in one take. Open on the flag in the first fifteen seconds.
 | --- | --- | --- |
 | 0:00 | Landing page, scroll to hero | "Patient is not allergic to penicillin. If your app pastes only the cleanup, it can drop not and still return two hundred." |
 | 0:12 | Click **Open audit workspace** | "This is not a dictation app. It is a measurement layer on the two strings the Dictation API already returns." |
-| 0:18 | Point at corpus metrics row (loaded from disk) | "These counts come from a fifteen-clip corpus on disk, not hand-typed." |
+| 0:18 | Point at corpus metrics row (loaded from disk) | "These counts come from a fifteen-clip corpus on disk, not hand-typed. Users ask for a cleanup dial; we show what the default cleanup changed first." |
 | 0:25 | Click **Load sample** (no API key) | "Sample case from a recorded response. No API call." |
 | 0:32 | Verdict + rewrite marks | "High verdict. The rewrite dropped not. Marks are from a deterministic checker, not a second model." |
 | 0:42 | Findings list + verbatim confidence bars | "Each finding names the token. Word confidence comes from the API words array." |

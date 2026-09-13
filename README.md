@@ -1,28 +1,22 @@
-<p align="center">
-  <img src="docs/readme/logo.png" alt="Redline logo" width="96" height="96" />
-</p>
+<div align="center">
 
-<h1 align="center">Redline</h1>
+<img src="./docs/readme/logo.png" alt="Redline logo" width="96" />
 
-<p align="center">
-  <strong>See when Dictation cleanup changes meaning</strong>
-</p>
+# Redline
 
-<p align="center">
-  <img src="docs/readme/tagline.svg" alt="The cleanup can change what you said. Redline shows you when it does." width="880" />
-</p>
+**See when Dictation cleanup changes meaning**
 
-<p align="center">
-  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-%3E%3D22.6-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node 22.6+" /></a>
-  <a href="package.json"><img src="https://img.shields.io/badge/deps-zero-0ea5e9?style=flat-square" alt="Zero runtime dependencies" /></a>
-  <a href="test/ground.test.ts"><img src="https://img.shields.io/badge/tests-20%20passing-22c55e?style=flat-square" alt="20 tests passing" /></a>
-  <a href="https://www.assemblyai.com/"><img src="https://img.shields.io/badge/hackathon-Hack%20into%20Dictation-4ea1ff?style=flat-square" alt="AssemblyAI Hack into Dictation" /></a>
-  <img src="https://img.shields.io/badge/verifier-deterministic-111827?style=flat-square" alt="Deterministic verifier" />
-</p>
+<img src="./docs/readme/tagline.png" alt="The cleanup can change what you said. Redline shows you when it does." width="720" />
 
-<p align="center">
-  Built for <a href="https://www.assemblyai.com/">AssemblyAI Hack into Dictation</a> · September 2026 · Demilade Ayeku
-</p>
+[![Node](https://img.shields.io/badge/node-%3E%3D22.6-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Deps](https://img.shields.io/badge/deps-zero-0ea5e9?style=flat-square)](package.json)
+[![Tests](https://img.shields.io/badge/tests-20%20passing-22c55e?style=flat-square)](test/ground.test.ts)
+[![Hackathon](https://img.shields.io/badge/hackathon-Hack%20into%20Dictation-4ea1ff?style=flat-square)](https://www.assemblyai.com/)
+![Verifier](https://img.shields.io/badge/verifier-deterministic-111827?style=flat-square)
+
+Built for [AssemblyAI Hack into Dictation](https://www.assemblyai.com/) · September 2026 · Demilade Ayeku
+
+</div>
 
 ---
 
@@ -32,9 +26,11 @@ Say *"Patient is not allergic to penicillin."* An app that pastes only the clean
 
 Redline compares the Dictation API pair (`text` vs `llm_response`), runs a **deterministic** checker (no second model), and marks every span in the rewrite that does not trace back to the verbatim.
 
-<p align="center">
-  <img src="docs/readme/redline-align.svg" alt="Animated diagram: verbatim keeps not, rewrite drops it, high verdict" width="880" />
-</p>
+People ask for a cleanup *dial* (how aggressive fillers and pauses get stripped). Product UIs often ship one automatic cleanup. Redline answers a prior question: **show what the cleanup changed** before you add more knobs.
+
+<div align="center">
+  <img src="./docs/readme/redline-align.png" alt="Verbatim keeps not; rewrite drops it; high verdict" width="720" />
+</div>
 
 The web UI is a demo shell. The submission is the checker, the corpus evidence, and documented limits.
 
@@ -42,15 +38,25 @@ The web UI is a demo shell. The submission is the checker, the corpus evidence, 
 
 ## Demo
 
-| Landing | Audit workspace (sample loaded) |
+| Landing | Audit workspace (sample) |
 | :---: | :---: |
-| <img src="docs/readme/landing.png" alt="Redline landing page" width="420" /> | <img src="docs/readme/workspace.png" alt="Audit workspace with high verdict sample" width="420" /> |
+| ![Landing](./docs/readme/landing.png) | ![Workspace](./docs/readme/workspace.png) |
 
 | URL | Purpose |
 | --- | --- |
 | http://localhost:8787 | Landing page |
 | http://localhost:8787/app.html | Audit workspace |
 | http://localhost:8787/app.html?sample=1 | Offline sample (no API call) |
+
+---
+
+## What to do next
+
+See [`PRIORITY.md`](PRIORITY.md). Short version:
+
+1. Record the 90s demo (`DEMO.md` / T15)
+2. Submit the hackathon form
+3. Push this README image fix if GitHub still shows broken SVGs
 
 ---
 
@@ -164,13 +170,13 @@ Redline is not a guess about what AssemblyAI cares about. It extends arguments f
 
 ### Reference screenshots
 
-| S1 · Entity accuracy | S2 · Push-to-talk Sync API |
+| [S1 · Entity accuracy](https://www.assemblyai.com/blog/entity-accuracy-in-speech-to-text) | [S2 · Push-to-talk Sync API](https://www.assemblyai.com/blog/build-push-to-talk-dictation-sync-api) |
 | :---: | :---: |
-| <a href="https://www.assemblyai.com/blog/entity-accuracy-in-speech-to-text"><img src="docs/readme/refs/s1-entity-accuracy.png" alt="Screenshot: Entity accuracy in speech-to-text" width="420" /></a> | <a href="https://www.assemblyai.com/blog/build-push-to-talk-dictation-sync-api"><img src="docs/readme/refs/s2-push-to-talk.png" alt="Screenshot: Build push-to-talk dictation" width="420" /></a> |
+| ![S1](./docs/readme/refs/s1-entity-accuracy.png) | ![S2](./docs/readme/refs/s2-push-to-talk.png) |
 
-| S3 · Voice memo transcription | S6 · Dictation cleanup |
+| [S3 · Voice memo](https://www.assemblyai.com/blog/add-voice-memo-transcription-to-your-app) | [S6 · Dictation cleanup](https://www.assemblyai.com/blog/dictation-cleanup) |
 | :---: | :---: |
-| <a href="https://www.assemblyai.com/blog/add-voice-memo-transcription-to-your-app"><img src="docs/readme/refs/s3-voice-memo.png" alt="Screenshot: Voice memo transcription" width="420" /></a> | <a href="https://www.assemblyai.com/blog/dictation-cleanup"><img src="docs/readme/refs/s6-dictation-cleanup.png" alt="Screenshot: Dictation cleanup" width="420" /></a> |
+| ![S3](./docs/readme/refs/s3-voice-memo.png) | ![S6](./docs/readme/refs/s6-dictation-cleanup.png) |
 
 ### Source index
 

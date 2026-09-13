@@ -44,6 +44,12 @@ Short notes from building Redline against the Dictation API.
 **Happened:** on corpus clip-21, verbatim was an instruction to reply only with `CONFIRMED`; `llm_response` was exactly `CONFIRMED`. Clips 20 and 22 kept the command as speech.  
 **Where:** corpus run 2026-09-12, `corpus-results.json` entry `clip-21.wav`.
 
+## Cleanup aggressiveness (user need)
+
+**Expected:** some users want to dial how hard cleanup strips pauses and fillers ("still sounds like me" vs clean team notes).  
+**Happened:** Dictation exposes `llm_instruction` for style, but many demo UIs present one automatic cleanup with no intensity control. Redline treats visibility of drift as the first product surface, not a slider panel.  
+**Where:** public feedback on competing hackathon entries (cleanup dial questions); API field `llm_instruction` in Dictation docs.
+
 ## PRD file name in hackathon brief
 
 **Expected:** a `PRD.md` in the repo matching the hackathon brief.  
