@@ -31,18 +31,58 @@ const MIME: Record<string, string> = {
   '.wav': 'audio/wav',
 };
 
+/** Dictation API language_codes (docs list). */
+const LANGUAGE_CODES = new Set([
+  'en',
+  'es',
+  'de',
+  'fr',
+  'it',
+  'pt',
+  'tr',
+  'nl',
+  'sv',
+  'no',
+  'da',
+  'fi',
+  'hi',
+  'vi',
+  'ar',
+  'he',
+  'ja',
+  'zh',
+  'ur',
+]);
+
+function requestPath(url: string | undefined): string {
+  if (!url) return '/';
+  const q = url.indexOf('?');
+  return q === -1 ? url : url.slice(0, q);
+}
+
+function languageFromRequest(req: IncomingMessage): string {
+  try {
+    const u = new URL(req.url || '/', 'http://localhost');
+    const raw = (u.searchParams.get('language') || 'en').toLowerCase();
+    return LANGUAGE_CODES.has(raw) ? raw : 'en';
+  } catch {
+    return 'en';
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' || req.method === 'HEAD') {
       return serveStatic(req, res);
     }
-    if (req.method === 'POST' && req.url === '/api/warm') {
+    const pathname = requestPath(req.url);
+    if (req.method === 'POST' && pathname === '/api/warm') {
       return await warm(req, res);
     }
-    if (req.method === 'POST' && req.url === '/api/transcribe') {
+    if (req.method === 'POST' && pathname === '/api/transcribe') {
       return await transcribe(req, res);
     }
-    if (req.method === 'POST' && req.url === '/api/check') {
+    if (req.method === 'POST' && pathname === '/api/check') {
       return await check(req, res);
     }
     res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -162,10 +202,17 @@ async function transcribe(req: IncomingMessage, res: ServerResponse): Promise<vo
     return;
   }
 
+  const language = languageFromRequest(req);
+  const config: Record<string, unknown> = {
+    sample_rate: 16000,
+    channels: 1,
+    language_codes: [language],
+  };
+
   const form = new FormData();
   form.append(
     'config',
-    new Blob([JSON.stringify({ sample_rate: 16000, channels: 1 })], {
+    new Blob([JSON.stringify(config)], {
       type: 'application/json',
     }),
   );
@@ -207,6 +254,8 @@ async function transcribe(req: IncomingMessage, res: ServerResponse): Promise<vo
   console.log(
     'transcribe session_id',
     sessionId,
+    'language',
+    language,
     'request_time_ms',
     requestTimeMs ?? 'n/a',
   );
