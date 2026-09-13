@@ -56,14 +56,6 @@
       border-radius: 4px;
     }
 
-    .space-hint {
-      display: block;
-      margin-top: 0.65rem;
-      color: var(--muted);
-      font-size: 0.86rem;
-      text-align: center;
-    }
-
     #recordBtn.recording {
       background: var(--high);
       border-color: var(--high);
@@ -71,24 +63,118 @@
       animation: rec-pulse 1.2s ease-in-out infinite;
     }
 
-    .paste-box {
-      margin: 0 0 1.15rem;
+    .mode-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .mode-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 0.95rem;
       border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 0.85rem 1rem 1rem;
-      background: #fbfcfd;
-    }
-    .paste-box summary {
-      cursor: pointer;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.9rem;
       font-weight: 600;
-      font-family: var(--font-display);
-      letter-spacing: -0.02em;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     }
+
+    .mode-tab.is-active {
+      background: #1b2a41;
+      border-color: #1b2a41;
+      color: #fff;
+    }
+
+    .check-stage {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 1.1rem 1.15rem 1rem;
+      margin-bottom: 1.15rem;
+      box-shadow: 0 10px 28px rgba(18, 18, 18, 0.04);
+    }
+
+    .stage-panel[hidden] { display: none !important; }
+
+    .stage-hint {
+      margin: 0 0 1.1rem;
+      min-height: 4.5rem;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.5;
+    }
+
+    .stage-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.55rem;
+      padding-top: 0.35rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .lang-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      background: #f3f4f6;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .lang-pill img {
+      width: 1.15rem;
+      height: 0.86rem;
+      object-fit: cover;
+      border-radius: 2px;
+      box-shadow: 0 0 0 1px rgba(18, 18, 18, 0.08);
+    }
+
+    .stage-bar .go-btn,
+    .stage-bar .primary,
+    #sampleBtn,
+    #pasteCheckBtn {
+      margin-left: auto;
+      border-radius: 999px;
+      padding: 0.55rem 1.15rem;
+      font-weight: 600;
+    }
+
+    .stage-bar .primary,
+    #recordBtn.primary {
+      background: #1f7a4d;
+      border-color: #1f7a4d;
+      color: #fff;
+    }
+
+    .stage-bar .primary:hover,
+    #recordBtn.primary:hover {
+      background: #18653f;
+      border-color: #18653f;
+    }
+
+    .paste-fields {
+      display: grid;
+      gap: 0.65rem;
+      margin-bottom: 0.85rem;
+    }
+
     .paste-help {
       color: var(--muted);
       font-size: 0.92rem;
-      margin: 0.65rem 0 0.75rem;
+      margin: 0 0 0.75rem;
     }
+
     .paste-label {
       display: block;
       font-size: 0.72rem;
@@ -96,20 +182,24 @@
       text-transform: uppercase;
       color: var(--muted);
       font-weight: 600;
-      margin: 0.55rem 0 0.35rem;
+      margin: 0 0 0.35rem;
     }
-    .paste-box textarea {
+
+    .paste-fields textarea {
       width: 100%;
       font: inherit;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 0.65rem 0.75rem;
+      border-radius: 12px;
+      padding: 0.75rem 0.85rem;
       resize: vertical;
-      background: #fff;
+      background: #fbfcfd;
+      min-height: 4.5rem;
     }
-    #pasteCheckBtn {
-      margin-top: 0.75rem;
-      border-radius: 10px;
+
+    .paste-fields textarea:focus {
+      outline: 2px solid rgba(61, 142, 196, 0.35);
+      outline-offset: 1px;
+      background: #fff;
     }
 
     .error {
@@ -438,10 +528,7 @@
     }
 
     .lang-footnote {
-      margin-top: 1rem;
-      font-size: 0.82rem;
-      color: var(--muted);
-      line-height: 1.45;
+      display: none;
     }
 
     @media (max-width: 720px) {
@@ -464,7 +551,7 @@
         <span>Redline</span>
       </a>
       <div class="instrument-badge">
-        <span>Audit instrument</span>
+        <span>Workspace</span>
       </div>
       <div class="top-links">
         <a href="/">Home</a>
@@ -474,9 +561,8 @@
     <main class="workspace">
       <h1>Audit workspace</h1>
       <p class="lede">
-        This is not a dictation app. It compares the Dictation API pair
-        <code>text</code> (verbatim) vs <code>llm_response</code> (cleanup) and
-        shows where they diverge.
+        Compare the Dictation API’s verbatim transcript to its cleanup and see
+        where meaning may have changed.
       </p>
 
       <div class="metrics-row" id="metricsRow" aria-label="Corpus headline">
@@ -498,66 +584,93 @@
         </div>
       </div>
 
-      <details class="how-read" id="howRead" open>
+      <details class="how-read" id="howRead">
         <summary>How to read a run</summary>
         <div class="how-body">
           <ol>
-            <li>Verdict first: did meaning possibly change?</li>
-            <li>Rewrite with inline marks: what the cleanup produced.</li>
-            <li>Findings list: each dropped or inserted token with category.</li>
-            <li>Verbatim with confidence bars when the API returns <code>words[]</code>.</li>
+            <li>Verdict: did meaning possibly change?</li>
+            <li>Rewrite marks: tokens that do not trace back to the verbatim.</li>
+            <li>Findings list: each drop or insert with a category.</li>
+            <li>Verbatim: confidence bars when the API returns word scores.</li>
           </ol>
         </div>
       </details>
 
-      <section class="input-strip" aria-label="Inputs to the checker">
-        <div class="input-card">
-          <h3>Record</h3>
-          <p>Live audio through the API</p>
-          <button type="button" class="primary" id="recordBtn">Record</button>
+      <div class="mode-tabs" role="tablist" aria-label="Input mode">
+        <button type="button" class="mode-tab is-active" id="tabRecord" role="tab" aria-selected="true">Record</button>
+        <button type="button" class="mode-tab" id="tabSample" role="tab" aria-selected="false">Sample</button>
+        <button type="button" class="mode-tab" id="tabPaste" role="tab" aria-selected="false">Paste</button>
+      </div>
+
+      <section class="check-stage" aria-label="Checker input">
+        <div class="stage-panel" id="panelRecord">
+          <p class="stage-hint">
+            Speak, then stop. We send audio to the API and mark where the cleanup
+            diverges from the verbatim.
+          </p>
+          <div class="stage-bar">
+            <span class="lang-pill" title="English">
+              <img src="https://flagcdn.com/w40/gb.png" width="18" height="14" alt="" />
+              English
+            </span>
+            <button type="button" class="primary go-btn" id="recordBtn">Record</button>
+          </div>
         </div>
-        <div class="input-card">
-          <h3>Sample</h3>
-          <p>Offline penicillin case</p>
-          <button type="button" id="sampleBtn">Load sample</button>
+
+        <div class="stage-panel" id="panelSample" hidden>
+          <p class="stage-hint">
+            Offline penicillin example. No API call — loads a recorded pair that
+            drops the word “not”.
+          </p>
+          <div class="stage-bar">
+            <span class="lang-pill" title="English">
+              <img src="https://flagcdn.com/w40/gb.png" width="18" height="14" alt="" />
+              English
+            </span>
+            <button type="button" class="primary go-btn" id="sampleBtn">Load sample</button>
+          </div>
         </div>
-        <div class="input-card">
-          <h3>Paste</h3>
-          <p>Any pipeline pair</p>
-          <button type="button" id="pasteOpenBtn">Open paste</button>
+
+        <div class="stage-panel" id="panelPaste" hidden>
+          <p class="paste-help">
+            Paste any verbatim / rewrite pair. The checker runs in the browser only.
+          </p>
+          <div class="paste-fields">
+            <div>
+              <label class="paste-label" for="pasteSaid">What was said</label>
+              <textarea id="pasteSaid" rows="3" placeholder="Enter the verbatim transcript…"></textarea>
+            </div>
+            <div>
+              <label class="paste-label" for="pasteGot">What the tool produced</label>
+              <textarea id="pasteGot" rows="3" placeholder="Enter the cleanup output…"></textarea>
+            </div>
+          </div>
+          <div class="stage-bar">
+            <span class="lang-pill" title="English">
+              <img src="https://flagcdn.com/w40/gb.png" width="18" height="14" alt="" />
+              English
+            </span>
+            <button type="button" class="primary go-btn" id="pasteCheckBtn">Check</button>
+          </div>
         </div>
       </section>
-      <span class="space-hint" id="spaceHint">Space toggles record when no field is focused</span>
-
-      <details class="paste-box" id="pasteBox" hidden>
-        <summary>Paste pair: check any pipeline (no API call)</summary>
-        <p class="paste-help">
-          Paste what was said and what the tool produced. The checker runs in the browser only.
-        </p>
-        <label class="paste-label" for="pasteSaid">What was said</label>
-        <textarea id="pasteSaid" rows="3" placeholder="Verbatim transcript"></textarea>
-        <label class="paste-label" for="pasteGot">What the tool produced</label>
-        <textarea id="pasteGot" rows="3" placeholder="Rewrite / cleanup output"></textarea>
-        <button type="button" id="pasteCheckBtn">Check paste</button>
-      </details>
 
       <div class="error" id="error" role="alert"></div>
 
       <div class="empty-state" id="emptyState">
         <div class="compare-preview">
           <div class="col">
-            <h3>Verbatim (<code>text</code>)</h3>
+            <h3>Verbatim</h3>
             <p class="preview-text" id="previewVerbatim"></p>
           </div>
           <div class="col">
-            <h3>Rewrite (<code>llm_response</code>)</h3>
+            <h3>Rewrite</h3>
             <p class="preview-text" id="previewRewrite"></p>
           </div>
         </div>
         <p>
-          Sample pair shown dimmed. Marks mean a token does not trace back.
+          Preview of the sample pair.
           <button type="button" id="previewSampleBtn" class="linkish">Load sample</button>
-          Recorded response, no API call.
         </p>
       </div>
 
@@ -605,11 +718,6 @@
           </table>
         </div>
       </details>
-
-      <p class="lang-footnote">
-        Dictation API supports 19 language codes per docs (announcement lists 18).
-        This corpus was recorded in English only. Per-language drift is not measured yet.
-      </p>
     </main>
   </div>
 
@@ -625,8 +733,12 @@
 
     const recordBtn = document.getElementById('recordBtn');
     const sampleBtn = document.getElementById('sampleBtn');
-    const pasteOpenBtn = document.getElementById('pasteOpenBtn');
-    const pasteBox = document.getElementById('pasteBox');
+    const tabRecord = document.getElementById('tabRecord');
+    const tabSample = document.getElementById('tabSample');
+    const tabPaste = document.getElementById('tabPaste');
+    const panelRecord = document.getElementById('panelRecord');
+    const panelSample = document.getElementById('panelSample');
+    const panelPaste = document.getElementById('panelPaste');
     const emptyState = document.getElementById('emptyState');
     const compareGrid = document.getElementById('compareGrid');
     const pasteCheckBtn = document.getElementById('pasteCheckBtn');
@@ -651,6 +763,24 @@
     const corpusTableBody = document.getElementById('corpusTableBody');
     const corpusPanelNote = document.getElementById('corpusPanelNote');
 
+    function setMode(mode) {
+      const map = {
+        record: { tab: tabRecord, panel: panelRecord },
+        sample: { tab: tabSample, panel: panelSample },
+        paste: { tab: tabPaste, panel: panelPaste },
+      };
+      for (const [key, { tab, panel }] of Object.entries(map)) {
+        const on = key === mode;
+        tab.classList.toggle('is-active', on);
+        tab.setAttribute('aria-selected', on ? 'true' : 'false');
+        panel.hidden = !on;
+      }
+      if (mode === 'paste') pasteSaid.focus();
+    }
+
+    tabRecord.addEventListener('click', () => setMode('record'));
+    tabSample.addEventListener('click', () => setMode('sample'));
+    tabPaste.addEventListener('click', () => setMode('paste'));
     let recording = false;
     let hasRendered = false;
     let audioCtx = null;
@@ -701,7 +831,10 @@
       knownLimitsEl.appendChild(li);
     }
 
-    previewSampleBtn.addEventListener('click', () => sampleBtn.click());
+    previewSampleBtn.addEventListener('click', () => {
+      setMode('sample');
+      sampleBtn.click();
+    });
 
     loadCorpusStats()
       .then(({ rows, manifest, counts }) => {
@@ -724,12 +857,6 @@
     sampleBtn.addEventListener('click', () => {
       clearError();
       render(SAMPLE);
-    });
-
-    pasteOpenBtn.addEventListener('click', () => {
-      pasteBox.hidden = false;
-      pasteBox.open = true;
-      pasteSaid.focus();
     });
 
     pasteCheckBtn.addEventListener('click', () => {
