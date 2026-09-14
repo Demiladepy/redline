@@ -10,10 +10,10 @@
   <link rel="stylesheet" href="/site.css" />
   <style>
     :root {
-      --landing-bg: #faf9f6;
-      --landing-ink: #121212;
-      --landing-muted: #6b6b6b;
-      --landing-line: rgba(18, 18, 18, 0.1);
+      --landing-bg: #f7f8fa;
+      --landing-ink: #1a2332;
+      --landing-muted: #6a727d;
+      --landing-line: rgba(26, 35, 50, 0.12);
       --landing-accent: #7ec4f0;
       --landing-accent-strong: #3d8ec4;
       --landing-accent-soft: #eef7fd;
@@ -131,11 +131,12 @@
       border: 1px solid var(--landing-ink);
       color: #fff;
       padding: 0.62rem 1.05rem;
+      box-shadow: 0 8px 20px rgba(26, 35, 50, 0.18);
     }
 
     .btn-dark:hover {
-      background: #2a2a2a;
-      border-color: #2a2a2a;
+      background: #2a3548;
+      border-color: #2a3548;
     }
 
     .btn-dark .icon-wrap {
@@ -963,8 +964,7 @@
         </div>
       </div>
       <p class="ninja-note">
-        The ninja runs the line between what you said and what came back. Same
-        pair the checker measures.
+        Verbatim on one side. Cleanup on the other. Redline marks the gap.
       </p>
     </div>
 
@@ -1238,11 +1238,11 @@
           <div class="faq-body">
             <div class="faq-body-inner">
               <p class="faq-answer">
-                Users want lighter or heavier cleanup depending on the job.
-                Many dictation UIs ship one automatic rewrite. Redline measures
-                what that rewrite changed on the API pair first. Visibility
-                before more knobs. The Dictation API already accepts
-                <code>llm_instruction</code> if you need a different cleanup style.
+                Visibility first. A dial changes how hard cleanup strips fillers;
+                Redline answers the prior question: did that rewrite change meaning?
+                Measure the <code>text</code> / <code>llm_response</code> pair before
+                adding knobs. The API already accepts <code>llm_instruction</code>
+                for style.
               </p>
             </div>
           </div>

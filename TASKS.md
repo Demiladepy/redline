@@ -442,7 +442,7 @@ cat README.md
 
 ---
 
-### [ ] T15 [YOU] — Demo video and submission
+### [x] T15 [YOU] — Demo video and submission
 
 90 seconds, no slides.
 
@@ -480,3 +480,4 @@ T11 — 25 WAV clips + fixtures/manifest.csv ready (mp3s converted) — 2026-09-
 T12 — RESULTS.md corpus table + FP notes in ground.js — 2026-09-12
 T13 — FEEDBACK.md for AssemblyAI prize lane — 2026-09-12
 T14 — README.md rewritten for submission — 2026-09-12
+T15 — demo video + hackathon form submitted — 2026-09-13

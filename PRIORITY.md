@@ -1,34 +1,23 @@
-# Priority now (submission day)
+# Priority now (post-submit)
 
-Ordered by impact. Everything else waits.
+Submission is in. Remaining work is polish and honesty, not new product surface.
 
-## 1. Fix README images (done in this pass)
+## Done
 
-GitHub often fails to render SVG in README. Use PNG + markdown image links under `docs/readme/`.
+- Demo video + form (T15)
+- README PNG images
+- Language picker on record (`language_codes`)
+- Workspace composer UI + landing alignment (post-submit polish)
 
-## 2. T15 [YOU]: demo video + form
+## If judges revisit the repo
 
-Follow `DEMO.md` / TASKS T15. 90 seconds. Open on the HIGH flag in the first 15s.
-
-Submit: https://forms.gle/THwUT2tQ5XvABQqT7
-
-## 3. Positioning from X feedback (cleanup aggressiveness)
-
-People want a cleanup *dial*. Bhasha ships one automatic setting. Redline's answer is **visibility**, not more knobs:
-
-- Measurement of `text` vs `llm_response` before adding intensity sliders
-- FAQ + README state that plainly
-- Do **not** build a cleanup-intensity UI before the video is recorded
-
-## 4. Optional polish after the video
-
-- `AAI_API_KEY` on host if you deploy (server-side only)
-- Discord feedback lane from `FEEDBACK.md`
-- Commit + push README image fix if not already on origin
+1. Hard-refresh local `npm start` → Sample → Paste still HIGH
+2. Push any uncommitted polish (`DEMO.md`, `app.html`, landing CSS, docs)
+3. Optional: Discord feedback from `FEEDBACK.md`
 
 ## Do not spend time on
 
-- AssemblyAI Node SDK
-- Team / translation / four-module surfaces
-- Per-language drift before deadline
-- Mascot work on the audit workspace
+- Cleanup-intensity dial / multi-module platform
+- Per-language drift corpus or Yoruba SDK
+- AssemblyAI Node SDK / npm deps
+- Mascot on the audit workspace

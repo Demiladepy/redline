@@ -53,12 +53,12 @@ button {
 }
 
 button.primary {
-  background: var(--blue);
-  border-color: var(--blue);
+  background: #1a2332;
+  border-color: #1a2332;
   color: #fff;
 }
 
-button.primary:hover { background: var(--blue-deep); border-color: var(--blue-deep); }
+button.primary:hover { background: #2a3548; border-color: #2a3548; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .brand {
@@ -180,14 +180,15 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   color: inherit;
 }
 
-/* Language coverage strip */
+/* Language coverage strip — aligned with workspace tokens */
 .lang-strip {
   margin: 0 auto;
   max-width: 52rem;
-  padding: 1.15rem 1.25rem 1.35rem;
-  border: 1px solid var(--line, rgba(18, 18, 18, 0.1));
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
+  padding: 1.25rem 1.35rem 1.4rem;
+  border: 1px solid var(--line, rgba(26, 35, 50, 0.12));
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 12px 32px rgba(26, 35, 50, 0.04);
 }
 
 .lang-strip-head {
